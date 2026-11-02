@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Water Map Rescue</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: demo bar on top, role sidebar on the right (RTL), working area of plain cards and tables; the public schedule is a single mobile-first column. */
+:root{
+  --bg:#EDF3F8; --surface:#FFFFFF; --surface2:#F3F8FB; --line:#D5E2EB;
+  --ink:#0B2540; --muted:#53708A;
+  --brand:#0B4F8A; --brand-ink:#FFFFFF; --aqua:#0E9AA7; --aqua-soft:#D9F2F4;
+  --ok:#17794A; --ok-soft:#DCF3E5; --warn:#A8500A; --warn-soft:#FCE9D0;
+  --bad:#B42318; --bad-soft:#FCE1DD; --info:#1D5FA8; --info-soft:#DBEAF9;
+  --gray:#4B5F72; --gray-soft:#E5ECF2;
+  --side:#0B2F4F; --side-ink:#CFE2F0;
+  --font-body:'IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+  --font-head:'Readex Pro','IBM Plex Sans Arabic','Segoe UI',Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#08172A; --surface:#0E2238; --surface2:#122B45; --line:#234560;
+  --ink:#E7F1F9; --muted:#93B1C8;
+  --brand:#5EAEEA; --brand-ink:#04182A; --aqua:#2CC5D2; --aqua-soft:#0F3C48;
+  --ok:#5FD9A0; --ok-soft:#10382A; --warn:#F2B16B; --warn-soft:#42290D;
+  --bad:#FF8F82; --bad-soft:#47201C; --info:#7FBBF0; --info-soft:#143A5E;
+  --gray:#A7BBCB; --gray-soft:#1C3449; --side:#050F1B; --side-ink:#BCD4E6; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#08172A; --surface:#0E2238; --surface2:#122B45; --line:#234560;
+  --ink:#E7F1F9; --muted:#93B1C8;
+  --brand:#5EAEEA; --brand-ink:#04182A; --aqua:#2CC5D2; --aqua-soft:#0F3C48;
+  --ok:#5FD9A0; --ok-soft:#10382A; --warn:#F2B16B; --warn-soft:#42290D;
+  --bad:#FF8F82; --bad-soft:#47201C; --info:#7FBBF0; --info-soft:#143A5E;
+  --gray:#A7BBCB; --gray-soft:#1C3449; --side:#050F1B; --side-ink:#BCD4E6; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.65;
+  padding-block:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--font-head);margin:0;line-height:1.4;text-wrap:balance}
+h1{font-size:24px}h2{font-size:17px;margin-bottom:12px}h3{font-size:15px;margin:16px 0 8px}
+p{margin:0}button{font-family:inherit}
+.muted{color:var(--muted)}.tiny{font-size:12.5px}.num{font-variant-numeric:tabular-nums;font-weight:700}
+:focus-visible{outline:3px solid var(--aqua);outline-offset:2px}
+.ic{flex:none}
+
+.demo{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;background:var(--side);color:var(--side-ink);
+  padding:8px 14px;border-radius:0 0 12px 12px;font-size:13px}
+.demo .grp{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.demo select{width:auto;padding:4px 8px;background:var(--surface);font-size:13px}
+.demo .btn{padding:3px 10px;font-size:12.5px;background:transparent;color:var(--side-ink);border-color:rgba(255,255,255,.28)}
+.demo .tag{background:var(--aqua);color:#04202A;border-radius:999px;padding:1px 10px;font-weight:600}
+
+.shell{display:grid;grid-template-columns:244px minmax(0,1fr);gap:16px;margin-top:14px;padding-bottom:48px}
+.side{background:var(--side);color:var(--side-ink);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px;position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow:auto}
+.brand{display:flex;gap:10px;align-items:center;padding:4px 6px 12px;color:#fff;font-family:var(--font-head);font-weight:600}
+.brand small{display:block;font-family:var(--font-body);font-weight:400;opacity:.75;font-size:12px}
+.nav{display:flex;gap:10px;align-items:center;width:100%;text-align:start;padding:10px 12px;border-radius:9px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.nav:hover{background:rgba(255,255,255,.08)}
+.nav.on{background:rgba(255,255,255,.14);color:#fff;font-weight:600}
+.nav .cnt{margin-inline-start:auto;background:var(--aqua);color:#04202A;border-radius:999px;font-size:12px;padding:0 8px;font-weight:700}
+.side .who{margin-top:auto;padding:12px 6px 0;border-top:1px solid rgba(255,255,255,.15);font-size:13px}
+.side .who b{display:block;color:#fff}
+.main{min-width:0;display:flex;flex-direction:column;gap:16px}
+.menu-btn{display:none;align-self:flex-start}
+.bd{display:none}
+
+.ph{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.phm{flex:1;min-width:220px}.phm p{margin-top:2px}
+.pha{display:flex;flex-wrap:wrap;gap:8px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat span{color:var(--muted);font-size:13px}
+.stat b{font-family:var(--font-head);font-size:24px;font-variant-numeric:tabular-nums}
+.stat.ok b{color:var(--ok)}.stat.warn b{color:var(--warn)}.stat.bad b{color:var(--bad)}.stat.info b{color:var(--info)}.stat.aqua b{color:var(--aqua)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;align-items:start}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}.row>div{min-width:0}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 12px;text-align:start;border-bottom:1px solid var(--line);vertical-align:middle}
+th{background:var(--surface2);color:var(--muted);font-weight:600;font-size:13px;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.nw{white-space:nowrap}
+
+.badge{display:inline-flex;align-items:center;padding:1px 10px;border-radius:999px;font-size:12.5px;font-weight:600;white-space:nowrap;background:var(--gray-soft);color:var(--gray)}
+.badge.ok{background:var(--ok-soft);color:var(--ok)}.badge.warn{background:var(--warn-soft);color:var(--warn)}
+.badge.bad{background:var(--bad-soft);color:var(--bad)}.badge.info{background:var(--info-soft);color:var(--info)}
+.badge.aqua{background:var(--aqua-soft);color:var(--aqua)}
+
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:9px;display:inline-flex;gap:6px;align-items:center;justify-content:center;font-size:14px;font-weight:500;line-height:1.4}
+.btn:hover{border-color:var(--brand)}
+.btn.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.btn.aqua{background:var(--aqua);color:#032028;border-color:var(--aqua)}
+.btn.danger{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+.btn.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.btn.ghost{background:transparent}.btn.sm{padding:4px 10px;font-size:13px}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>label,.lbl{font-weight:600;font-size:13.5px}
+.req{color:var(--bad);margin-inline-start:3px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 11px;width:100%;min-width:0}
+input[type=checkbox]{width:18px;height:18px;padding:0;accent-color:var(--brand);flex:none}
+textarea{resize:vertical}
+.field small{color:var(--muted);font-size:12.5px}
+.err{color:var(--bad);font-size:13px}
+.chk{display:flex;gap:10px;align-items:flex-start;cursor:pointer;padding:6px 0}
+.form{display:flex;flex-direction:column;gap:14px}
+.fa{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.search{display:flex;flex-wrap:wrap;gap:10px}.search>*{flex:1;min-width:150px}
+
+.bar{height:10px;background:var(--surface2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--aqua)}.bar.over i{background:var(--bad)}
+.kvs{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 18px}
+.kv{display:flex;flex-direction:column;min-width:0}.kv span{color:var(--muted);font-size:12.5px}.kv b{font-weight:600;overflow-wrap:anywhere}
+.clist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.clist li{display:flex;gap:8px;align-items:flex-start}.clist .ic{color:var(--ok);margin-top:4px}
+.note{padding:10px 14px;border-radius:10px;background:var(--info-soft);color:var(--info);font-size:14px}
+.note.warn{background:var(--warn-soft);color:var(--warn)}.note.bad{background:var(--bad-soft);color:var(--bad)}.note.ok{background:var(--ok-soft);color:var(--ok)}
+.empty{padding:22px;text-align:center;color:var(--muted)}.empty b{display:block;color:var(--ink)}
+
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line)}
+.tab{border:0;background:transparent;color:var(--muted);padding:10px 14px;cursor:pointer;font-size:14px;font-weight:500;border-bottom:3px solid transparent;white-space:nowrap}
+.tab.on{color:var(--brand);border-bottom-color:var(--brand);font-weight:700}
+
+.tl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tl li{display:flex;gap:12px;padding-bottom:14px;position:relative}
+.tl li:not(:last-child)::before{content:"";position:absolute;inset-inline-start:7px;top:18px;bottom:0;width:2px;background:var(--line)}
+.tl .dot{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);background:var(--surface);flex:none;margin-top:4px}
+.tl li.done .dot{background:var(--ok);border-color:var(--ok)}
+.tl li.cur .dot{background:var(--aqua);border-color:var(--aqua);box-shadow:0 0 0 4px var(--aqua-soft)}
+.tl li.rej .dot{background:var(--bad);border-color:var(--bad)}
+.tl li.todo{color:var(--muted)}.tl small{display:block;color:var(--muted)}.tl p{margin-top:2px;font-size:13.5px}
+
+.stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+.stage{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--surface2);display:flex;gap:10px;align-items:flex-start}
+.stage .n{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--gray-soft);color:var(--gray);font-weight:700;flex:none;font-size:13px}
+.stage.done .n{background:var(--ok);color:#fff}.stage.rej .n{background:var(--bad);color:#fff}.stage.cur .n{background:var(--aqua);color:#032028}
+.stage b{display:block}.stage small{color:var(--muted)}
+
+.steps{display:flex;flex-wrap:wrap;gap:6px}
+.st{padding:5px 12px;border-radius:999px;background:var(--surface2);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.st.done{background:var(--ok-soft);color:var(--ok);border-color:transparent}.st.cur{background:var(--aqua);color:#032028;border-color:transparent;font-weight:700}
+
+.week{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.day{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.day.today{border-color:var(--aqua);box-shadow:0 0 0 2px var(--aqua-soft)}
+.day h3{margin:0;font-size:14px}.day h3 small{display:block;color:var(--muted);font-weight:400;font-size:12px}
+.ap{text-align:start;display:flex;flex-direction:column;gap:3px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);border-radius:9px;padding:8px;cursor:pointer;font-size:13px;width:100%}
+.ap:hover{border-color:var(--brand)}.ap b{font-size:14px}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:5px 14px;border-radius:999px;cursor:pointer;font-size:14px}
+.chip.on{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+
+.acard{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--surface);display:flex;flex-direction:column;gap:8px;min-width:0}
+.acard.sel{border-color:var(--aqua);box-shadow:0 0 0 2px var(--aqua-soft)}
+.mini{display:flex;align-items:center;gap:8px;font-size:12.5px}.mini .bar{flex:1;height:6px}
+
+.media{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.tile{aspect-ratio:4/3;max-width:100%;border-radius:10px;background:linear-gradient(135deg,var(--aqua-soft),var(--info-soft));display:grid;place-items:center;overflow:hidden;color:var(--brand)}
+.tile img{width:100%;height:100%;object-fit:cover}
+.mcap{font-size:13px;display:flex;flex-direction:column;gap:3px;margin-top:6px}
+
+.modal-bg{position:fixed;inset:0;background:rgba(4,18,32,.58);display:grid;place-items:center;z-index:100;padding:16px}
+.modal{background:var(--surface);color:var(--ink);border-radius:14px;max-width:580px;width:100%;max-height:90vh;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:14px;border:1px solid var(--line)}
+.mact{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start}
+#toasts{position:fixed;left:0;right:0;bottom:calc(16px + env(safe-area-inset-bottom,0px));display:grid;justify-items:center;gap:8px;pointer-events:none;z-index:200;padding-inline:16px}
+.toast{background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.toast.bad{background:var(--bad);color:#fff}
+
+.login{max-width:1000px;margin:24px auto 60px;display:flex;flex-direction:column;gap:22px}
+.hero{background:linear-gradient(160deg,var(--side),#0B4F8A);color:#fff;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:12px}
+.hero h1{font-size:30px}.hero p{max-width:62ch;opacity:.92}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.rolecard{text-align:start;cursor:pointer;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;color:var(--ink);font-size:14px}
+.rolecard:hover{border-color:var(--aqua)}.rolecard h2{margin:0;display:flex;gap:8px;align-items:center}
+.rolecard .go{margin-top:auto;color:var(--brand);font-weight:700}
+.flow{display:flex;flex-wrap:wrap;gap:8px;list-style:none;margin:0;padding:0}
+.flow li{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13.5px}
+.flow li b{color:var(--aqua)}
+
+.pub{max-width:720px;margin:14px auto 60px;display:flex;flex-direction:column;gap:14px}
+.pubh{display:flex;gap:12px;align-items:center}
+.pubday{display:flex;flex-direction:column;gap:8px}
+.pubday h2{margin:0;font-size:16px;display:flex;justify-content:space-between;gap:8px}
+.pubrow{display:flex;gap:12px;align-items:center;text-align:start;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px;cursor:pointer;color:var(--ink);font-size:15px}
+.pubrow .t{font-family:var(--font-head);font-weight:600;min-width:84px;color:var(--brand)}
+.pubrow .a{flex:1;min-width:0;font-weight:600}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;top:0;bottom:0;right:0;width:min(290px,86vw);z-index:60;border-radius:14px 0 0 14px;max-height:none;
+    padding:calc(14px + env(safe-area-inset-top,0px)) calc(14px + env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) 14px;
+    transform:translateX(110%);transition:transform .2s}
+  .side.open{transform:none}
+  .bd{display:block;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50}
+  .menu-btn{display:inline-flex}
+  h1{font-size:21px}.hero h1{font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toasts" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+document.documentElement.lang='ar';document.documentElement.dir='rtl';
+
+/* ---------- helpers ---------- */
+const AR_DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const pad=n=>String(n).padStart(2,'0');
+const fmtD=iso=>{if(!iso)return '—';const [y,m,d]=iso.split('-');return d+'/'+m+'/'+y};
+const dayName=iso=>AR_DAYS[new Date(iso+'T00:00:00').getDay()];
+const addDays=(iso,n)=>{const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+n);return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const weekStartOf=iso=>addDays(iso,-((new Date(iso+'T00:00:00').getDay()+1)%7));
+const fmtT=t=>{if(!t)return '—';const h=+t.slice(0,2),m=t.slice(3,5);return (h%12||12)+':'+m+' '+(h<12?'ص':'م')};
+const nowT=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
+const fq=n=>Number(n||0).toLocaleString('en-US')+' م³';
+const sum=(a,f)=>a.reduce((s,x)=>s+(+f(x)||0),0);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s);
+const RL={pc:'منسق المشروع',sm:'مسؤول المحطة',fc:'المنسق الميداني'};
+
+const IC={
+ drop:'<path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+ home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+ folder:'<path d="M3 6h6l2 2h10v11H3z"/>',
+ station:'<path d="M4 20V9l5-3v3l5-3v3l6-3v14z"/><path d="M8 20v-4h3v4"/>',
+ truck:'<path d="M2 6h11v10H2z"/><path d="M13 9h5l3 3v4h-8z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/>',
+ map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+ report:'<path d="M5 20V10M12 20V4M19 20v-7"/>',
+ bell:'<path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
+ user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+ check:'<path d="M5 12l5 5 9-10"/>',
+ x:'<path d="M6 6l12 12M18 6L6 18"/>',
+ cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+ plus:'<path d="M12 5v14M5 12h14"/>',
+ clip:'<rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4h6v3H9zM9 12h6M9 16h4"/>',
+ file:'<path d="M6 3h9l4 4v14H6z"/><path d="M9 14l2 2 4-4"/>',
+ menu:'<path d="M4 6h16M4 12h16M4 18h16"/>',
+ arrow:'<path d="M9 5l7 7-7 7"/>',
+ camera:'<path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="4"/>',
+ video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>',
+ edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+ trash:'<path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13"/>',
+ globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/>'
+};
+const ic=(n,s=18)=>'<svg class="ic" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+IC[n]+'</svg>';
+const logo=(s=34)=>'<svg width="'+s+'" height="'+s+'" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#0E9AA7"/><path d="M20 7s9 9.5 9 16a9 9 0 0 1-18 0c0-6.500 9-16 9-16z" fill="#fff"/><path d="M14.500 24c1.500 2.500 4 3.500 6.500 3" stroke="#0B4F8A" stroke-width="2" fill="none" stroke-linecap="round"/></svg>';
+
+/* ---------- vocabularies ---------- */
+const RS={
+ draft:['مسودة','gray'],pending_station:['بانتظار رد المحطة','warn'],rejected_station:['مرفوض من المحطة','bad'],
+ accepted_station:['مقبول من المحطة','info'],pending_inspection:['بانتظار الفحص الميداني','warn'],
+ rejected_inspection:['مرفوض بعد الفحص','bad'],inspection_approved:['معتمد بعد الفحص','info'],
+ contract_finalized:['تم التعاقد','ok'],pending_scheduling:['قيد الجدولة','warn'],scheduled:['تمت الجدولة','info'],
+ in_progress:['قيد التنفيذ','aqua'],completed:['مكتمل','ok'],closed:['مغلق','gray']};
+const PATH=['pending_station','accepted_station','pending_inspection','inspection_approved','contract_finalized','pending_scheduling','scheduled','in_progress','completed','closed'];
+const APPROVED=['contract_finalized','pending_scheduling','scheduled','in_progress','completed','closed'];
+const COMMIT=['accepted_station','pending_inspection','inspection_approved','contract_finalized','pending_scheduling','scheduled','in_progress'];
+const PS={planning:['قيد التخطيط','warn'],active:['نشط','info'],closed:['مغلق','gray']};
+const AS=[['scheduled','مجدول'],['preparing','قيد التحضير'],['on_way','في الطريق'],['arrived','وصل إلى المنطقة'],['distributing','جارٍ التوزيع'],['completed','اكتمل التوزيع']];
+const CRIT={
+ quality:'جودة المياه مطابقة للمتطلبات المحددة في المشروع',
+ qty:'توفر الكمية المطلوبة بالكامل خلال فترة التوريد',
+ tankers:'توفر صهاريج نظيفة ومعتمدة بسعة لا تقل عن 10 م³',
+ start:'الالتزام بتاريخ البدء المتفق عليه',
+ cert:'وجود شهادة فحص جودة حديثة (آخر 30 يومًا)',
+ access:'إتاحة الدخول لفريق الفحص الميداني'};
+const EV=[['order','انتظام التوزيع'],['safety','السلامة'],['coop','التعاون'],['queue','تنظيم الطوابير'],['waste','تجنب هدر المياه']];
+const NEED={'مرتفع':'bad','متوسط':'warn','عادي':'info'};
+
+/* ---------- seed data (demo) ---------- */
+const hs=(...a)=>a.map(x=>({s:x[0],at:x[1],by:x[2],note:x[3]||''}));
+const ALLC=['quality','qty','tankers','start'];
+function seed(){
+ const ph=(t,c)=>({type:'photo',name:t+'.jpg',caption:c,consent:true});
+ const mk=(arr)=>arr.map((m,i)=>Object.assign({id:'m'+Math.random().toString(36).slice(2,8)+i},m));
+ const S={today:'2026-11-02',
+  users:{pc:{name:'أحمد المصري',title:'منسق المشروع',email:'ahmad@example.org',phone:'059-0000001'},
+         sm:{name:'خالد النجار',title:'مسؤول محطة التحلية',email:'khaled@example.org',phone:'059-0000002',stationId:'s1'},
+         fc:{name:'ليلى عبد ربه',title:'المنسقة الميدانية',email:'laila@example.org',phone:'059-0000003'}},
+  areas:[
+   {id:'beach',name:'مخيم الشاطئ',hh:5200,need:'مرتفع',ev:{order:4,safety:5,coop:4,queue:3,waste:4,note:'تعاون ممتاز من لجنة المخيم.',at:'2026-10-28'}},
+   {id:'shuja',name:'الشجاعية',hh:6100,need:'مرتفع',ev:{order:3,safety:4,coop:4,queue:3,waste:3,note:'',at:'2026-10-27'}},
+   {id:'rimal',name:'الرمال',hh:3800,need:'متوسط',ev:{order:5,safety:5,coop:4,queue:4,waste:5,note:'',at:'2026-10-20'}},
+   {id:'tal',name:'تل الهوا',hh:2900,need:'متوسط',ev:{order:4,safety:4,coop:3,queue:4,waste:4,note:'',at:'2026-10-18'}},
+   {id:'saf',name:'الصفطاوي',hh:3300,need:'متوسط',ev:{order:4,safety:4,coop:4,queue:4,waste:3,note:'',at:'2026-10-29'}},
+   {id:'kar',name:'الكرامة',hh:2400,need:'عادي',ev:{order:5,safety:4,coop:5,queue:4,waste:4,note:'',at:'2026-10-29'}}],
+  stations:[
+   {id:'s1',name:'محطة تحلية الشاطئ',loc:'غرب مدينة غزة',desc:'محطة تحلية بمياه البحر تخدم مدينة غزة ولديها أسطول صهاريج خاص.',capacity:1500,available:1400,tds:280,chl:0.3,ph:7.4,cert:'2026-10-12',standard:'مطابقة لمواصفات مياه الشرب المعتمدة',contact:'059-1111111',
+    tankers:[{id:'t1',plate:'ت-101',cap:10,state:'متاح'},{id:'t2',plate:'ت-102',cap:10,state:'متاح'},{id:'t3',plate:'ت-103',cap:15,state:'قيد الصيانة'},{id:'t4',plate:'ت-104',cap:20,state:'متاح'}],perf:{done:14,onTime:92,var:2.1}},
+   {id:'s2',name:'محطة تحلية الرمال الوسطى',loc:'وسط غزة',desc:'محطة متوسطة السعة تعمل بنظام التناضح العكسي.',capacity:1000,available:400,tds:350,chl:0.25,ph:7.2,cert:'2026-09-30',standard:'مطابقة لمواصفات مياه الشرب المعتمدة',contact:'059-2222222',
+    tankers:[{id:'t5',plate:'ر-201',cap:10,state:'متاح'},{id:'t6',plate:'ر-202',cap:10,state:'قيد الاستخدام'}],perf:{done:9,onTime:84,var:3.4}},
+   {id:'s3',name:'محطة تحلية الصفطاوي',loc:'شمال غزة',desc:'محطة حديثة بسعة جيدة وصهاريج بسعات مختلفة.',capacity:800,available:600,tds:420,chl:0.2,ph:7.6,cert:'2026-10-05',standard:'مطابقة لمواصفات مياه الشرب المعتمدة',contact:'059-3333333',
+    tankers:[{id:'t7',plate:'ص-301',cap:12,state:'متاح'},{id:'t8',plate:'ص-302',cap:12,state:'متاح'},{id:'t9',plate:'ص-303',cap:8,state:'متاح'}],perf:{done:5,onTime:88,var:2.8}}],
+  projects:[
+   {id:'p1',name:'سقيا غزة – المرحلة الثانية',desc:'توفير مياه شرب محلاة لأحياء مدينة غزة الأكثر احتياجًا خلال أسبوع توزيع مكثف.',employer:'مؤسسة الأمل للتنمية',sponsor:'الهيئة الخيرية للإغاثة المائية',budget:'45000',start:'2026-10-31',end:'2026-11-06',qty:600,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',other:'التوزيع صباحًا قدر الإمكان.',status:'active'},
+   {id:'p2',name:'مياه الشرب لحي تل الهوا',desc:'تأمين مياه شرب لأسر حي تل الهوا لمدة أسبوعين.',employer:'جمعية نماء الخيرية',sponsor:'مؤسسة العون الإنساني',budget:'',start:'2026-11-03',end:'2026-11-16',qty:500,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',other:'',status:'planning'},
+   {id:'p3',name:'سقيا الصفطاوي والكرامة',desc:'مشروع قصير لتوزيع المياه في منطقتي الصفطاوي والكرامة.',employer:'مؤسسة الأمل للتنمية',sponsor:'الهيئة الخيرية للإغاثة المائية',budget:'18000',start:'2026-10-27',end:'2026-10-30',qty:240,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',other:'',status:'active'},
+   {id:'p4',name:'دعم مخيم الشاطئ بالمياه',desc:'إمداد مخيم الشاطئ بمياه الشرب لمدة أسبوع.',employer:'جمعية نماء الخيرية',sponsor:'مؤسسة العون الإنساني',budget:'',start:'2026-11-03',end:'2026-11-09',qty:300,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',other:'',status:'planning'}],
+  requests:[
+   {id:'r1',no:'WMR-2026-001',projectId:'p1',stationId:'s1',qty:600,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',periodStart:'2026-10-31',periodEnd:'2026-11-06',startDate:'2026-10-31',criteria:ALLC,extra:'',status:'in_progress',published:true,
+    plan:[{areaId:'beach',qty:160,visits:2},{areaId:'shuja',qty:200,visits:2},{areaId:'rimal',qty:90,visits:1},{areaId:'tal',qty:70,visits:1},{areaId:'saf',qty:80,visits:1}],
+    inspection:{res:{quality:'ok',qty:'ok',tankers:'ok',start:'ok'},notes:'تمت المعاينة وأخذ عينات المياه.',at:'2026-10-25'},contract:{ref:'CT-2026-014',at:'2026-10-26'},
+    history:hs(['pending_station','2026-10-22','منسق المشروع'],['accepted_station','2026-10-23','مسؤول المحطة','التزام كامل بالكمية والفترة'],['pending_inspection','2026-10-23','النظام','أُحيل إلى المنسق الميداني'],['inspection_approved','2026-10-25','المنسق الميداني','جميع المعايير مطابقة'],['contract_finalized','2026-10-26','المنسق الميداني'],['pending_scheduling','2026-10-26','النظام'],['scheduled','2026-10-29','المنسق الميداني','نُشر الجدول الأسبوعي'],['in_progress','2026-10-31','المنسق الميداني'])},
+   {id:'r2',no:'WMR-2026-002',projectId:'p2',stationId:'s2',qty:500,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',periodStart:'2026-11-03',periodEnd:'2026-11-16',startDate:'2026-11-03',criteria:ALLC,extra:'',status:'rejected_station',published:false,plan:[],
+    history:hs(['pending_station','2026-10-27','منسق المشروع'],['rejected_station','2026-10-28','مسؤول المحطة','الكمية المتاحة حاليًا لا تكفي بسبب التزامات سابقة خلال هذه الفترة.'])},
+   {id:'r3',no:'WMR-2026-003',projectId:'p2',stationId:'s1',qty:500,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',periodStart:'2026-11-03',periodEnd:'2026-11-16',startDate:'2026-11-03',criteria:ALLC,extra:'تعبئة الصهاريج في الصباح الباكر.',status:'pending_station',published:false,plan:[],
+    history:hs(['pending_station','2026-11-01','منسق المشروع'])},
+   {id:'r4',no:'WMR-2026-004',projectId:'p4',stationId:'s1',qty:300,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',periodStart:'2026-11-03',periodEnd:'2026-11-09',startDate:'2026-11-03',criteria:ALLC.concat(['cert']),extra:'',status:'pending_inspection',published:false,plan:[],
+    history:hs(['pending_station','2026-10-30','منسق المشروع'],['accepted_station','2026-10-31','مسؤول المحطة','التزام كامل بالشروط'],['pending_inspection','2026-10-31','النظام','أُحيل إلى المنسق الميداني'])},
+   {id:'r5',no:'WMR-2026-005',projectId:'p4',stationId:'s3',qty:300,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',periodStart:'2026-11-03',periodEnd:'2026-11-09',startDate:'2026-11-03',criteria:ALLC,extra:'',status:'rejected_inspection',published:false,plan:[],
+    inspection:{res:{quality:'bad',qty:'ok',tankers:'ok',start:'ok'},notes:'نتيجة فحص العينة: TDS = 610 ملغ/لتر وهي أعلى من الحد المطلوب.',at:'2026-10-28'},
+    history:hs(['pending_station','2026-10-24','منسق المشروع'],['accepted_station','2026-10-25','مسؤول المحطة'],['pending_inspection','2026-10-25','النظام'],['rejected_inspection','2026-10-28','المنسق الميداني','نتيجة فحص العينة: TDS = 610 ملغ/لتر وهي أعلى من الحد المطلوب.'])},
+   {id:'r6',no:'WMR-2026-006',projectId:'p3',stationId:'s1',qty:240,quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',periodStart:'2026-10-27',periodEnd:'2026-10-30',startDate:'2026-10-27',criteria:ALLC,extra:'',status:'completed',published:true,
+    plan:[{areaId:'kar',qty:160,visits:2},{areaId:'saf',qty:80,visits:1}],
+    inspection:{res:{quality:'ok',qty:'ok',tankers:'ok',start:'ok'},notes:'',at:'2026-10-13'},contract:{ref:'CT-2026-011',at:'2026-10-14'},
+    history:hs(['pending_station','2026-10-10','منسق المشروع'],['accepted_station','2026-10-11','مسؤول المحطة'],['pending_inspection','2026-10-11','النظام'],['inspection_approved','2026-10-13','المنسق الميداني'],['contract_finalized','2026-10-14','المنسق الميداني'],['pending_scheduling','2026-10-14','النظام'],['scheduled','2026-10-15','المنسق الميداني'],['in_progress','2026-10-27','المنسق الميداني'],['completed','2026-10-29','المنسق الميداني','اكتملت جميع عمليات التوزيع'])}],
+  appts:[
+   {id:'a1',reqId:'r1',areaId:'beach',date:'2026-10-31',time:'08:00',qty:80,status:'completed',actual:78,actualDate:'2026-10-31',actualTime:'08:20',notes:'توزيع منظم وهادئ.',closed:true,media:mk([ph('طابور منظم','توزيع منظم عند نقطة التعبئة'),{type:'video',name:'توثيق التوزيع.mp4',caption:'مقطع قصير للتوزيع',consent:false}])},
+   {id:'a2',reqId:'r1',areaId:'shuja',date:'2026-11-01',time:'09:00',qty:100,status:'completed',actual:100,actualDate:'2026-11-01',actualTime:'09:10',notes:'',closed:false,media:mk([ph('تعبئة العبوات','المستفيدون يملؤون العبوات')])},
+   {id:'a3',reqId:'r1',areaId:'beach',date:'2026-11-02',time:'08:30',qty:80,status:'distributing',actual:'',notes:'',closed:false,media:[]},
+   {id:'a4',reqId:'r1',areaId:'rimal',date:'2026-11-02',time:'11:00',qty:90,status:'scheduled',actual:'',notes:'',closed:false,media:[]},
+   {id:'a5',reqId:'r1',areaId:'tal',date:'2026-11-03',time:'09:00',qty:70,status:'scheduled',actual:'',notes:'',closed:false,media:[]},
+   {id:'a6',reqId:'r1',areaId:'shuja',date:'2026-11-04',time:'09:00',qty:100,status:'scheduled',actual:'',notes:'',closed:false,media:[]},
+   {id:'a11',reqId:'r6',areaId:'kar',date:'2026-10-27',time:'09:00',qty:80,status:'completed',actual:80,actualDate:'2026-10-27',actualTime:'09:05',notes:'',closed:true,media:mk([ph('توزيع الكرامة','توزيع منظم')])},
+   {id:'a12',reqId:'r6',areaId:'saf',date:'2026-10-28',time:'10:00',qty:80,status:'completed',actual:76,actualDate:'2026-10-28',actualTime:'10:15',notes:'تعذر تسليم الكمية كاملة بسبب تأخر وصول الصهريج.',closed:true,media:mk([ph('الصفطاوي','تعبئة العبوات'),{type:'video',name:'شكر من الأهالي.mp4',caption:'مقطع شكر من المستفيدين',consent:true}])},
+   {id:'a13',reqId:'r6',areaId:'kar',date:'2026-10-29',time:'09:00',qty:80,status:'completed',actual:80,actualDate:'2026-10-29',actualTime:'09:00',notes:'',closed:true,media:[]}],
+  notes:[
+   {id:'n1',to:'pc',text:'رفضت محطة الرمال الوسطى الطلب WMR-2026-002',at:'2026-10-28',read:false,ln:'request',lid:'r2'},
+   {id:'n2',to:'pc',text:'رُفض الطلب WMR-2026-005 بعد الفحص الميداني',at:'2026-10-28',read:false,ln:'request',lid:'r5'},
+   {id:'n3',to:'pc',text:'اكتملت عمليات التوزيع في مشروع «سقيا الصفطاوي والكرامة»',at:'2026-10-29',read:false,ln:'project',lid:'p3'},
+   {id:'n4',to:'sm:s1',text:'طلب توريد جديد WMR-2026-003 بانتظار ردك',at:'2026-11-01',read:false,ln:'request',lid:'r3'},
+   {id:'n5',to:'sm:s1',text:'نُشر جدول التوزيع للطلب WMR-2026-001: جهّز الصهاريج',at:'2026-10-29',read:true,ln:'request',lid:'r1'},
+   {id:'n6',to:'fc',text:'طلب جديد بانتظار الفحص الميداني: WMR-2026-004',at:'2026-10-31',read:false,ln:'inspect',lid:'r4'},
+   {id:'n7',to:'fc',text:'موعد توزيع اليوم: مخيم الشاطئ 8:30 ص',at:'2026-11-02',read:false,ln:'appt',lid:'a3'}],
+  seq:{r:6,a:13,p:4,n:7}};
+ return S;
+}
+
+/* ---------- state ---------- */
+let S=seed();
+const ui={role:null,route:{name:'dashboard'},stack:[],q:{},draft:{},err:{},modal:null,menu:false,fcWeek:weekStartOf(S.today),pubWeek:weekStartOf(S.today),selProject:'',prefill:null};
+const P=id=>S.projects.find(x=>x.id===id);
+const ST=id=>S.stations.find(x=>x.id===id);
+const R=id=>S.requests.find(x=>x.id===id);
+const AR=id=>S.areas.find(x=>x.id===id);
+const AP=id=>S.appts.find(x=>x.id===id);
+const byDT=(a,b)=>(a.date+a.time).localeCompare(b.date+b.time);
+const apptsOf=rid=>S.appts.filter(a=>a.reqId===rid).sort(byDT);
+const sched=r=>sum(apptsOf(r.id),a=>a.qty);
+const remain=r=>r.qty-sched(r);
+const deliv=r=>sum(apptsOf(r.id).filter(a=>a.status==='completed'),a=>a.actual);
+const isApproved=r=>APPROVED.includes(r.status);
+const isRej=r=>r.status.indexOf('rejected')===0;
+const myStation=()=>ST(S.users.sm.stationId);
+const noteKey=role=>role==='sm'?'sm:'+S.users.sm.stationId:role;
+const myNotes=()=>S.notes.filter(n=>n.to===noteKey(ui.role));
+const unread=role=>S.notes.filter(n=>n.to===noteKey(role)&&!n.read).length;
+const avgEv=a=>{const v=EV.map(e=>a.ev[e[0]]);return Math.round(sum(v,x=>x)/v.length*10)/10};
+function setStatus(r,s,by,note){r.status=s;r.history.push({s:s,at:S.today,by:by,note:note||''})}
+function notify(to,text,ln,lid){S.notes.unshift({id:'n'+(++S.seq.n),to:to,text:text,at:S.today,read:false,ln:ln,lid:lid})}
+const allVisits=areaId=>S.appts.filter(a=>a.areaId===areaId).length;
+const pubAppts=()=>S.appts.filter(a=>{const r=R(a.reqId);return r&&r.published&&!isRej(r)}).sort(byDT);
+const pubStatus=a=>(a.status==='completed'||a.closed)?['تم التوزيع','ok']:(a.status==='scheduled'||a.status==='preparing')?['مجدول','info']:['قيد التنفيذ','warn'];
+
+function attention(){const out=[];S.projects.filter(p=>p.status!=='closed').forEach(p=>{
+ const rs=S.requests.filter(r=>r.projectId===p.id);
+ if(!rs.length)out.push({p:p,t:'لم يُرسل أي طلب توريد بعد'});
+ else if(rs.every(isRej))out.push({p:p,t:'جميع الطلبات مرفوضة: اختر محطة أخرى وأرسل طلبًا جديدًا'});
+ if(closeChecks(p).ok)out.push({p:p,t:'اكتملت عمليات التوزيع والمشروع جاهز للمراجعة والإغلاق'});});return out}
+function closeChecks(p){
+ const live=S.requests.filter(r=>r.projectId===p.id&&!isRej(r)&&r.status!=='draft');
+ const apr=live.filter(isApproved);const ap=S.appts.filter(a=>apr.some(r=>r.id===a.reqId));
+ const c=[{ok:apr.length>0,t:'يوجد طلب توريد معتمد ومتعاقد عليه'},
+  {ok:live.length>0&&live.every(r=>r.status==='completed'||r.status==='closed'),t:'جميع طلبات التوريد مكتملة ولا توجد طلبات معلّقة'},
+  {ok:ap.length>0&&ap.every(a=>a.closed),t:'جميع عمليات التوزيع مغلقة من المنسق الميداني'},
+  {ok:S.today>=p.end,t:'انتهت فترة المشروع ('+fmtD(p.end)+')'}];
+ return {c:c,ok:c.every(x=>x.ok)}}
+
+/* ---------- ui infra ---------- */
+const D=f=>ui.draft[f]||(ui.draft[f]={});
+const openForm=(f,d)=>{ui.draft[f]=d;ui.err[f]={}};
+const live={};
+function fld(f,name,label,o){o=o||{};const v=D(f)[name]!=null?D(f)[name]:(o.def!=null?o.def:'');const id=f+'-'+name;const er=(ui.err[f]||{})[name];let c;
+ if(o.type==='select')c='<select id="'+id+'" name="'+name+'" data-f="'+f+'">'+o.opts.map(x=>'<option value="'+esc(x[0])+'"'+(String(v)===String(x[0])?' selected':'')+'>'+esc(x[1])+'</option>').join('')+'</select>';
+ else if(o.type==='textarea')c='<textarea id="'+id+'" name="'+name+'" data-f="'+f+'" rows="'+(o.rows||3)+'" placeholder="'+esc(o.ph||'')+'">'+esc(v)+'</textarea>';
+ else c='<input id="'+id+'" name="'+name+'" data-f="'+f+'" type="'+(o.type||'text')+'" value="'+esc(v)+'" placeholder="'+esc(o.ph||'')+'"'+(o.min!=null?' min="'+o.min+'"':'')+(o.max!=null?' max="'+o.max+'"':'')+(o.step?' step="'+o.step+'"':'')+(o.ro?' readonly':'')+'>';
+ return '<div class="field">'+'<label for="'+id+'">'+label+(o.req?'<span class="req">*</span>':'')+'</label>'+c+(o.hint?'<small>'+o.hint+'</small>':'')+(er?'<div class="err" role="alert">'+er+'</div>':'')+'</div>'}
+const chk=(f,name,label)=>'<label class="chk" for="'+f+'-'+name+'"><input type="checkbox" id="'+f+'-'+name+'" name="'+name+'" data-f="'+f+'"'+(D(f)[name]?' checked':'')+'><span>'+label+'</span></label>';
+const errOf=(f,k)=>{const e=(ui.err[f]||{})[k];return e?'<div class="err" role="alert">'+e+'</div>':''};
+const badge=(t,tone)=>'<span class="badge '+(tone||'')+'">'+t+'</span>';
+const reqBadge=r=>badge(RS[r.status][0],RS[r.status][1]);
+const stat=(l,v,tone)=>'<div class="stat '+(tone||'')+'"><span>'+l+'</span><b>'+v+'</b></div>';
+const bar=(a,b,over)=>{const p=b>0?Math.min(100,Math.round(a/b*100)):0;return '<div class="bar'+(over?' over':'')+'" role="img" aria-label="'+p+'%"><i style="width:'+p+'%"></i></div>'};
+const empty=(t,s)=>'<div class="empty"><b>'+t+'</b>'+(s?'<p>'+s+'</p>':'')+'</div>';
+const kv=(k,v)=>'<div class="kv"><span>'+k+'</span><b>'+v+'</b></div>';
+const head=(title,sub,actions,back)=>'<div class="ph">'+(back?'<button class="btn sm ghost" data-a="back" aria-label="رجوع">'+ic('arrow',16)+' رجوع</button>':'')+'<div class="phm"><h1>'+title+'</h1>'+(sub?'<p class="muted">'+sub+'</p>':'')+'</div><div class="pha">'+(actions||'')+'</div></div>';
+const tbl=(cols,rows,emptyMsg)=>rows.length?'<div class="tbl-wrap"><table><thead><tr>'+cols.map(c=>'<th scope="col">'+c+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>':'<div class="card">'+empty(emptyMsg||'لا توجد بيانات')+'</div>';
+const goBtn=(label,to,id,extra)=>'<button class="btn sm" data-a="go" data-to="'+to+'" data-id="'+id+'"'+(extra||'')+'>'+label+'</button>';
+const tabsBar=list=>{const cur=ui.route.tab||list[0][0];return '<div class="tabs" role="tablist">'+list.map(t=>'<button role="tab" aria-selected="'+(cur===t[0])+'" class="tab'+(cur===t[0]?' on':'')+'" data-a="tab" data-k="'+t[0]+'">'+t[1]+'</button>').join('')+'</div>'};
+const searchBox=(key,ph,extra)=>'<div class="search"><input id="q-'+key+'" type="search" data-q="'+key+'" placeholder="'+ph+'" value="'+esc(ui.q[key]||'')+'" aria-label="'+ph+'">'+(extra||'')+'</div>';
+const selQ=(key,opts,label)=>'<select id="s-'+key+'" data-q="'+key+'" aria-label="'+label+'">'+opts.map(o=>'<option value="'+esc(o[0])+'"'+((ui.q[key]||'')===o[0]?' selected':'')+'>'+esc(o[1])+'</option>').join('')+'</select>';
+
+function go(name,p){ui.stack.push(ui.route);ui.route=Object.assign({name:name},p||{});ui.menu=false;ui.modal=null;render();window.scrollTo(0,0)}
+function toast(msg,tone){const t=document.createElement('div');t.className='toast'+(tone?' '+tone:'');t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),3200)}
+function modal(o){ui.modal=o;render()}
+
+/* ---------- shared widgets ---------- */
+function timeline(r){
+ const rej=isRej(r);const base=(r.history[0]&&r.history[0].s==='draft')?['draft'].concat(PATH):PATH;
+ const steps=rej?r.history.map(h=>({s:h.s,h:h})):base.map(s=>({s:s,h:r.history.find(x=>x.s===s)}));
+ const last=steps.reduce((i,x,k)=>x.h?k:i,-1);
+ return '<ol class="tl">'+steps.map((x,k)=>{const cls=x.h?(k===last?'cur':'done'):'todo';return '<li class="'+cls+(x.s.indexOf('rejected')===0?' rej':'')+'"><span class="dot"></span><div><b>'+RS[x.s][0]+'</b>'+(x.h?'<small>'+fmtD(x.h.at)+' · '+esc(x.h.by)+'</small>'+(x.h.note?'<p>'+esc(x.h.note)+'</p>':''):'')+'</div></li>'}).join('')+'</ol>'}
+function stages(r){
+ const has=s=>r.history.some(h=>h.s===s);const rs=r.status==='rejected_station',ri=r.status==='rejected_inspection';
+ const box=(n,t,st,sub)=>'<div class="stage '+st+'"><span class="n">'+(st==='done'?ic('check',14):st==='rej'?ic('x',14):n)+'</span><div><b>'+t+'</b><small>'+sub+'</small></div></div>';
+ return '<div class="stages" aria-label="مراحل منفصلة">'+
+  box(1,'قبول المحطة',has('accepted_station')?'done':rs?'rej':'cur',has('accepted_station')?'ألزمت المحطة نفسها بالشروط':rs?'رفضت المحطة الطلب':'بانتظار رد المحطة')+
+  box(2,'اعتماد الفحص الميداني',has('inspection_approved')?'done':ri?'rej':has('accepted_station')?'cur':'','')
+  .replace('<small></small>','<small>'+(has('inspection_approved')?'طابقت المعايير ميدانيًا':ri?'لم تطابق المعايير':'بعد قبول المحطة')+'</small>')+
+  box(3,'إتمام التعاقد',has('contract_finalized')?'done':has('inspection_approved')?'cur':'','').replace('<small></small>','<small>'+(has('contract_finalized')?'تم الاتفاق عبر المنصة':'بعد اعتماد الفحص')+'</small>')+'</div>'}
+function reqTerms(r){const p=P(r.projectId),s=ST(r.stationId);
+ return '<section class="card"><h2>شروط طلب التوريد</h2><div class="kvs">'+kv('رقم الطلب',r.no)+kv('المشروع',esc(p.name))+kv('الجهة المنفذة',esc(p.employer))+kv('الجهة المسؤولة',esc(p.sponsor))+kv('المحطة',esc(s.name))+kv('الكمية الإجمالية','<span class="num">'+fq(r.qty)+'</span>')+kv('فترة التوريد',fmtD(r.periodStart)+' – '+fmtD(r.periodEnd))+kv('تاريخ البدء',fmtD(r.startDate))+kv('الجودة المطلوبة',esc(r.quality))+'</div>'+
+ '<h3>المعايير والشروط المتفق عليها</h3><ul class="clist">'+r.criteria.map(k=>'<li>'+ic('check',16)+'<span>'+esc(CRIT[k])+'</span></li>').join('')+(r.extra?'<li>'+ic('check',16)+'<span>'+esc(r.extra)+'</span></li>':'')+'</ul></section>'}
+function reqRows(list,to,showStation){return list.map(r=>{const p=P(r.projectId),s=ST(r.stationId);return [r.no,esc(p.name)].concat(showStation?[esc(s.name)]:[]).concat([fq(r.qty),reqBadge(r),fmtD(r.history[r.history.length-1].at),goBtn('فتح',to,r.id)])})}
+function weekNav(key){const ws=ui[key];return '<div class="pha"><button class="btn sm" data-a="wk" data-k="'+key+'" data-n="-7">'+ic('arrow',14)+' الأسبوع السابق</button><b>'+fmtD(ws)+' – '+fmtD(addDays(ws,6))+'</b><button class="btn sm" data-a="wk" data-k="'+key+'" data-n="7">الأسبوع التالي</button></div>'}
+function weekGrid(ws,list,action,showQty,showArea){
+ return '<div class="week">'+[0,1,2,3,4,5,6].map(i=>{const d=addDays(ws,i);const L=list.filter(a=>a.date===d);
+  return '<div class="day'+(d===S.today?' today':'')+'"><h3>'+dayName(d)+'<small>'+fmtD(d)+(d===S.today?' · اليوم':'')+'</small></h3>'+(L.map(a=>{const ps=showQty?[AS.find(x=>x[0]===a.status)[1],a.closed?'ok':'info']:pubStatus(a);return '<button class="ap" data-a="'+action+'" data-id="'+a.id+'"><b>'+esc(AR(a.areaId).name)+'</b><span>'+fmtT(a.time)+(showQty?' · '+fq(a.qty):'')+'</span>'+(showQty&&a.closed?badge('مغلقة','ok'):badge(ps[0],showQty?(a.status==='completed'?'ok':a.status==='scheduled'?'info':'warn'):ps[1]))+'</button>'}).join('')||'<p class="muted tiny">لا توجد مواعيد</p>')+'</div>'}).join('')+'</div>'}
+function mediaTile(m,a){return '<div><div class="tile">'+(m.url?'<img src="'+m.url+'" alt="'+esc(m.caption||m.name)+'">':ic(m.type==='video'?'video':'camera',34))+'</div><div class="mcap"><b>'+esc(m.caption||m.name)+'</b><span class="muted">'+(m.type==='video'?'فيديو':'صورة')+(a?' · '+esc(AR(a.areaId).name)+' · '+fmtD(a.date):'')+'</span>'+(m.consent?badge('موافقة النشر متوفرة','ok'):badge('بدون موافقة نشر','warn'))+'</div></div>'}
+
+/* ---------- Project coordinator ---------- */
+function pcDash(){
+ const rs=S.requests,ps=S.projects;const apr=rs.filter(isApproved);const att=attention();
+ const pend=rs.filter(r=>['pending_station','accepted_station','pending_inspection'].indexOf(r.status)>=0).length;
+ return head('لوحة منسق المشروع','مرحبًا '+esc(S.users.pc.name)+'، هذه حالة مشاريعك وطلبات التوريد.','<button class="btn primary" data-a="newProject">'+ic('plus')+' مشروع جديد</button>')+
+ '<div class="stats">'+stat('إجمالي المشاريع',ps.length)+stat('مشاريع نشطة',ps.filter(p=>p.status==='active').length,'info')+stat('مشاريع مكتملة (مغلقة)',ps.filter(p=>p.status==='closed').length,'ok')+stat('طلبات قيد الانتظار',pend,'warn')+stat('طلبات مرفوضة',rs.filter(isRej).length,'bad')+stat('الكميات المعتمدة',fq(sum(apr,r=>r.qty)),'aqua')+stat('الكميات المسلّمة',fq(sum(apr,deliv)),'ok')+'</div>'+
+ '<div class="split"><section class="card"><h2>مشاريع تحتاج إلى انتباه</h2>'+(att.length?att.map(x=>'<div class="row"><div><b>'+esc(x.p.name)+'</b><p class="muted tiny">'+x.t+'</p></div>'+goBtn('فتح','project',x.p.id)+'</div>').join(''):empty('لا توجد مشاريع تحتاج إلى متابعة الآن'))+'</section>'+
+ '<section class="card"><h2>آخر طلبات التوريد</h2>'+rs.slice().reverse().slice(0,5).map(r=>'<div class="row"><div><b>'+r.no+'</b><p class="muted tiny">'+esc(P(r.projectId).name)+' · '+esc(ST(r.stationId).name)+'</p></div><div>'+reqBadge(r)+'</div></div>').join('')+'</section></div>'+
+ '<h2>مشاريعي</h2>'+pcProjTable(ps)}
+function pcProjTable(list){return tbl(['المشروع','الفترة','الكمية المطلوبة','المعتمدة','المسلّمة','الحالة',''],list.map(p=>{const rs=S.requests.filter(r=>r.projectId===p.id&&isApproved(r));return ['<b>'+esc(p.name)+'</b>',fmtD(p.start)+' – '+fmtD(p.end),fq(p.qty),fq(sum(rs,r=>r.qty)),fq(sum(rs,deliv)),badge(PS[p.status][0],PS[p.status][1]),goBtn('فتح','project',p.id)]}),'لا توجد مشاريع مطابقة')}
+function pcProjects(){const q=(ui.q.pj||'').trim(),st=ui.q.pjs||'';
+ const L=S.projects.filter(p=>(!q||(p.name+p.employer+p.sponsor).indexOf(q)>=0)&&(!st||p.status===st));
+ return head('المشاريع','كل مشاريع المياه التي تديرها','<button class="btn primary" data-a="newProject">'+ic('plus')+' مشروع جديد</button>')+searchBox('pj','ابحث باسم المشروع أو الجهة',selQ('pjs',[['','كل الحالات'],['planning','قيد التخطيط'],['active','نشط'],['closed','مغلق']],'الحالة'))+pcProjTable(L)}
+function pcProjectNew(){
+ return head('مشروع مياه جديد','أدخل بيانات المشروع ثم احفظه لتبدأ باختيار المحطة','',true)+
+ '<form class="card form" data-form="proj" novalidate>'+
+ fld('proj','name','اسم المشروع',{req:1})+fld('proj','desc','وصف المشروع وأهدافه',{type:'textarea',req:1,rows:3})+
+ '<div class="grid2">'+fld('proj','employer','الجهة المنفذة (صاحبة العمل)',{req:1})+fld('proj','sponsor','الجهة المسؤولة / الراعية',{req:1})+'</div>'+
+ '<div class="grid2">'+fld('proj','start','تاريخ بدء المشروع',{type:'date',req:1})+fld('proj','end','تاريخ انتهاء المشروع',{type:'date',req:1,hint:'<span id="proj-days"></span>'})+'</div>'+
+ '<div class="grid2">'+fld('proj','qty','إجمالي كمية المياه المطلوبة (م³)',{type:'number',min:1,req:1})+fld('proj','budget','الميزانية (اختياري، دولار)',{type:'number',min:0})+'</div>'+
+ fld('proj','quality','متطلبات جودة المياه',{req:1})+fld('proj','other','متطلبات أخرى خاصة بالمشروع',{type:'textarea',rows:2})+
+ '<div class="fa"><button type="button" class="btn primary" data-a="saveProject">حفظ المشروع</button><button type="button" class="btn" data-a="back">إلغاء</button></div></form>'}
+live.proj=()=>{const f=D('proj'),el=$('#proj-days');if(el)el.textContent=(f.start&&f.end&&f.end>=f.start)?'مدة المشروع: '+(Math.round((new Date(f.end)-new Date(f.start))/864e5)+1)+' يومًا':''};
+
+function pcProject(){
+ const p=P(ui.route.id);if(!p)return empty('المشروع غير موجود');
+ const rs=S.requests.filter(r=>r.projectId===p.id);const apr=rs.filter(isApproved);
+ const T=[['overview','نظرة عامة'],['requests','طلبات التوريد'],['dist','التوزيع'],['reports','التقارير والتوثيق'],['close','المراجعة والإغلاق']];const t=ui.route.tab||'overview';let body='';
+ if(t==='overview'){
+  body='<section class="card"><h2>بيانات المشروع</h2><div class="kvs">'+kv('الجهة المنفذة',esc(p.employer))+kv('الجهة المسؤولة',esc(p.sponsor))+kv('الفترة',fmtD(p.start)+' – '+fmtD(p.end))+kv('الميزانية',p.budget?Number(p.budget).toLocaleString('en-US')+' دولار':'غير محددة')+kv('جودة المياه المطلوبة',esc(p.quality))+kv('متطلبات أخرى',esc(p.other||'—'))+'</div><h3>الوصف والأهداف</h3><p>'+esc(p.desc)+'</p></section>'+
+  '<div class="stats">'+stat('الكمية المطلوبة',fq(p.qty))+stat('المعتمدة بعد التعاقد',fq(sum(apr,r=>r.qty)),'aqua')+stat('المجدولة',fq(sum(apr,sched)),'info')+stat('المسلّمة فعليًا',fq(sum(apr,deliv)),'ok')+'</div>'+
+  (p.status==='closed'?'<div class="note ok">المشروع مغلق بتاريخ '+fmtD(p.closedAt)+'.</div>':'<div class="fa"><button class="btn primary" data-a="newReqFor" data-id="'+p.id+'">'+ic('station')+' اختيار محطة وإنشاء طلب توريد</button></div>')}
+ if(t==='requests')body=tbl(['رقم الطلب','المحطة','الكمية','الحالة','آخر تحديث',''],rs.map(r=>[r.no,esc(ST(r.stationId).name),fq(r.qty),reqBadge(r),fmtD(r.history[r.history.length-1].at),goBtn('فتح','request',r.id)]),'لم تُرسل طلبات توريد لهذا المشروع بعد')+(p.status!=='closed'?'<div class="fa"><button class="btn primary" data-a="newReqFor" data-id="'+p.id+'">'+ic('plus')+' طلب توريد جديد</button></div>':'');
+ if(t==='dist'){
+  body=apr.length?apr.map(r=>'<section class="card"><div class="row"><div><h2>'+r.no+' · '+esc(ST(r.stationId).name)+'</h2><p class="muted tiny">'+reqBadge(r)+'</p></div><div class="tiny">مجدول '+fq(sched(r))+' من '+fq(r.qty)+'</div></div>'+bar(sched(r),r.qty)+
+   '<h3>مواعيد التوزيع</h3>'+tbl(['المنطقة','الموعد','المخصص','المسلّم','الحالة'],apptsOf(r.id).map(a=>[esc(AR(a.areaId).name),dayName(a.date)+' '+fmtD(a.date)+' · '+fmtT(a.time),fq(a.qty),a.actual===''||a.actual==null?'—':fq(a.actual),a.closed?badge('مغلقة','ok'):badge(AS.find(x=>x[0]===a.status)[1],a.status==='completed'?'ok':'info')]),'لم تُجدول مواعيد بعد')+'</section>').join(''):'<div class="card">'+empty('لا توجد عمليات توزيع بعد','تظهر هنا بعد اعتماد الفحص والتعاقد وجدولة المنسق الميداني.')+'</div>';
+  const ap=S.appts.filter(a=>apr.some(r=>r.id===a.reqId));
+  if(ap.length)body+='<h2>ملخص المناطق</h2>'+tbl(['المنطقة','عدد الزيارات','الكمية المخصصة','المسلّمة'],S.areas.filter(a=>ap.some(x=>x.areaId===a.id)).map(a=>{const L=ap.filter(x=>x.areaId===a.id);return [esc(a.name),L.length,fq(sum(L,x=>x.qty)),fq(sum(L.filter(x=>x.status==='completed'),x=>x.actual))]}))}
+ if(t==='reports'){
+  const ap=S.appts.filter(a=>apr.some(r=>r.id===a.reqId));const ms=[];ap.forEach(a=>a.media.forEach(m=>ms.push([m,a])));
+  body='<div class="stats">'+stat('عمليات التوزيع',ap.length)+stat('مغلقة',ap.filter(a=>a.closed).length,'ok')+stat('الكمية المسلّمة',fq(sum(ap.filter(a=>a.status==='completed'),a=>a.actual)),'aqua')+stat('ملفات التوثيق',ms.length,'info')+'</div>'+
+  '<h2>سجلات التوزيع</h2>'+tbl(['المنطقة','التاريخ','المخصص','المسلّم','الفرق','ملاحظات ميدانية'],ap.filter(a=>a.status==='completed').map(a=>[esc(AR(a.areaId).name),fmtD(a.actualDate||a.date),fq(a.qty),fq(a.actual),fq(a.actual-a.qty),esc(a.notes||'—')]),'لا توجد سجلات توزيع مكتملة بعد')+
+  '<h2>التوثيق بالصور والفيديو</h2><p class="muted tiny">لا تُنشر الصور أو المقاطع التي تُظهر المستفيدين إلا بعد التأكد من موافقتهم.</p>'+(ms.length?'<div class="media">'+ms.map(x=>mediaTile(x[0],x[1])).join('')+'</div>':'<div class="card">'+empty('لا توجد ملفات توثيق بعد')+'</div>')}
+ if(t==='close'){
+  const cc=closeChecks(p);
+  body='<section class="card"><h2>مراجعة المشروع قبل الإغلاق</h2><ul class="clist">'+cc.c.map(x=>'<li>'+(x.ok?ic('check',16):'<span style="color:var(--bad)">'+ic('x',16)+'</span>')+'<span>'+x.t+'</span></li>').join('')+'</ul>'+
+  '<div class="stats" style="margin-top:14px">'+stat('الكمية المعتمدة',fq(sum(apr,r=>r.qty)),'aqua')+stat('المسلّمة فعليًا',fq(sum(apr,deliv)),'ok')+stat('عدد عمليات التوزيع',S.appts.filter(a=>apr.some(r=>r.id===a.reqId)).length)+'</div>'+
+  '<p class="muted tiny" style="margin-top:12px">إغلاق عملية توزيع واحدة يتم من المنسق الميداني. إغلاق المشروع كله يتم هنا فقط بعد اكتمال كل العمليات.</p>'+
+  (p.status==='closed'?'<div class="note ok" style="margin-top:12px">تم إغلاق المشروع بتاريخ '+fmtD(p.closedAt)+'.</div>':'<div class="fa"><button class="btn ok" data-a="closeProject" data-id="'+p.id+'"'+(cc.ok?'':' disabled')+'>'+ic('check')+' إغلاق المشروع</button>'+(S.today<p.end?'<button class="btn" data-a="simEnd" data-id="'+p.id+'">محاكاة: الانتقال إلى تاريخ انتهاء الفترة</button>':'')+'</div>')+'</section>'}
+ const ps=PS[p.status];
+ return head(esc(p.name),badge(ps[0],ps[1])+' '+fmtD(p.start)+' – '+fmtD(p.end),'',true)+tabsBar(T)+body}
+
+function pcStations(){
+ const q=(ui.q.st||'').trim(),av=+(ui.q.sav||0);
+ const L=S.stations.filter(s=>(!q||(s.name+s.loc).indexOf(q)>=0)&&s.available>=av);
+ const open=S.projects.filter(p=>p.status!=='closed');
+ return head('محطات التحلية المسجّلة','اطّلع على المحطات واختر الأنسب لمشروعك')+
+ '<div class="card"><div class="field"><label for="s-sp">المشروع الذي ستُنشئ له الطلب</label><select id="s-sp" data-q="sp"><option value="">— اختر المشروع —</option>'+open.map(p=>'<option value="'+p.id+'"'+(ui.q.sp===p.id?' selected':'')+'>'+esc(p.name)+' ('+fq(p.qty)+')</option>').join('')+'</select></div></div>'+
+ searchBox('st','ابحث باسم المحطة أو الموقع',selQ('sav',[['','أي كمية متاحة'],['300','300 م³ فأكثر'],['600','600 م³ فأكثر'],['1000','1000 م³ فأكثر']],'الكمية المتاحة'))+
+ (L.length?'<div class="cards">'+L.map(s=>'<article class="card" style="display:flex;flex-direction:column;gap:10px"><div><h2 style="margin:0">'+esc(s.name)+'</h2><p class="muted tiny">'+esc(s.loc)+'</p></div><div class="kvs">'+kv('الإنتاج اليومي',fq(s.capacity))+kv('المتاح حاليًا','<span class="num">'+fq(s.available)+'</span>')+kv('الملوحة TDS',s.tds+' ملغ/لتر')+kv('الصهاريج',s.tankers.filter(t=>t.state==='متاح').length+' متاحة من '+s.tankers.length)+'</div><div class="tiny muted">أداء سابق: '+s.perf.done+' طلبًا منجزًا · التزام بالمواعيد '+s.perf.onTime+'%</div><div class="fa" style="margin-top:auto"><button class="btn" data-a="go" data-to="station" data-id="'+s.id+'">التفاصيل</button><button class="btn primary" data-a="pickStation" data-id="'+s.id+'">اختيار المحطة</button></div></article>').join('')+'</div>':'<div class="card">'+empty('لا توجد محطات مطابقة')+'</div>')}
+function pcStation(){const s=ST(ui.route.id);
+ return head(esc(s.name),esc(s.loc),'<button class="btn primary" data-a="pickStation" data-id="'+s.id+'">اختيار المحطة</button>',true)+
+ '<section class="card"><h2>معلومات عامة</h2><p>'+esc(s.desc)+'</p><div class="kvs" style="margin-top:12px">'+kv('الإنتاج اليومي',fq(s.capacity))+kv('الكمية المتاحة حاليًا',fq(s.available))+kv('جهة التواصل',esc(s.contact))+'</div></section>'+
+ '<section class="card"><h2>جودة المياه المعلنة</h2><div class="kvs">'+kv('الملوحة TDS',s.tds+' ملغ/لتر')+kv('الكلور الحر',s.chl+' ملغ/لتر')+kv('الرقم الهيدروجيني',s.ph)+kv('المعيار المعلن',esc(s.standard))+kv('آخر شهادة فحص',fmtD(s.cert))+'</div></section>'+
+ '<section class="card"><h2>الصهاريج</h2>'+tbl(['الرقم','السعة','الحالة'],s.tankers.map(t=>[esc(t.plate),fq(t.cap),badge(t.state,t.state==='متاح'?'ok':'warn')]))+'</section>'+
+ '<section class="card"><h2>الأداء السابق</h2><div class="kvs">'+kv('طلبات منجزة',s.perf.done)+kv('الالتزام بالمواعيد',s.perf.onTime+'%')+kv('متوسط فرق الكمية',s.perf.var+'%')+'</div><p class="muted tiny" style="margin-top:8px">بيانات تجريبية.</p></section>'}
+
+function pcReqNew(){
+ const f=D('req'),s=ST(f.stationId),p=P(f.project);
+ return head('إنشاء طلب توريد','الطلب مرتبط بمشروع واحد ومحطة واحدة','',true)+
+ '<form class="card form" data-form="req" novalidate><div class="grid2">'+
+ fld('req','project','المشروع',{type:'select',req:1,opts:S.projects.filter(x=>x.status!=='closed').map(x=>[x.id,x.name])})+
+ '<div class="field"><label>المحطة المختارة</label><input value="'+esc(s.name)+'" readonly aria-label="المحطة"><small>المتاح لدى المحطة: '+fq(s.available)+'</small></div></div>'+
+ '<div id="req-warn" class="note warn"'+(+f.qty>s.available?'':' hidden')+'>الكمية المطلوبة أكبر من المتاح حاليًا لدى المحطة. قد ترفض المحطة الطلب.</div>'+
+ '<div class="grid2">'+fld('req','qty','إجمالي الكمية المطلوبة (م³)',{type:'number',min:1,req:1})+fld('req','quality','الجودة المطلوبة',{req:1})+'</div>'+
+ '<div class="grid2">'+fld('req','periodStart','بداية فترة التوريد',{type:'date',req:1})+fld('req','periodEnd','نهاية فترة التوريد',{type:'date',req:1})+fld('req','startDate','تاريخ بدء التوريد',{type:'date',req:1})+'</div>'+
+ '<div><div class="lbl">المعايير والشروط الخاصة بهذا المشروع<span class="req">*</span></div><div class="muted tiny">ستصبح هذه المعايير قائمة الفحص التي يتحقق منها المنسق الميداني.</div>'+Object.keys(CRIT).map(k=>chk('req','c_'+k,esc(CRIT[k]))).join('')+errOf('req','crit')+'</div>'+
+ fld('req','extra','احتياجات ومتطلبات إضافية',{type:'textarea',rows:2})+
+ '<div class="fa"><button type="button" class="btn primary" data-a="sendReq">إرسال إلى المحطة</button><button type="button" class="btn" data-a="draftReq">حفظ كمسودة</button><button type="button" class="btn" data-a="back">إلغاء</button></div></form>'}
+live.req=()=>{const f=D('req'),s=ST(f.stationId),w=$('#req-warn');if(w)w.hidden=!(+f.qty>s.available)};
+
+function pcRequests(){const q=(ui.q.rq||'').trim(),st=ui.q.rqs||'';
+ const L=S.requests.filter(r=>(!q||(r.no+P(r.projectId).name+ST(r.stationId).name).indexOf(q)>=0)&&(!st||r.status===st));
+ return head('طلبات التوريد','كل الطلبات المرسلة وحالاتها')+searchBox('rq','ابحث برقم الطلب أو المشروع أو المحطة',selQ('rqs',[['','كل الحالات']].concat(Object.keys(RS).map(k=>[k,RS[k][0]])),'الحالة'))+tbl(['رقم الطلب','المشروع','المحطة','الكمية','الحالة','آخر تحديث',''],reqRows(L,'request',true),'لا توجد طلبات مطابقة')}
+function pcRequest(){const r=R(ui.route.id);if(!r)return empty('الطلب غير موجود');const p=P(r.projectId),s=ST(r.stationId);const last=r.history[r.history.length-1];
+ let act='';
+ if(isRej(r))act='<div class="note bad"><b>'+(r.status==='rejected_station'?'رفضت المحطة الطلب':'رُفض الطلب بعد الفحص الميداني')+'</b><p>'+(last.note?esc(last.note):'لم تُدخل ملاحظات.')+'</p><div class="fa"><button class="btn primary" data-a="reselect" data-id="'+r.id+'">'+ic('station')+' اختيار محطة أخرى وإرسال طلب جديد</button></div></div>';
+ if(r.status==='draft')act='<div class="fa"><button class="btn primary" data-a="sendDraft" data-id="'+r.id+'">إرسال إلى المحطة</button><button class="btn danger" data-a="delDraft" data-id="'+r.id+'">حذف المسودة</button></div>';
+ return head('الطلب '+r.no,esc(p.name)+' · '+esc(s.name),reqBadge(r),true)+act+
+ '<section class="card"><h2>المراحل الثلاث المنفصلة</h2>'+stages(r)+'</section>'+reqTerms(r)+
+ '<div class="split"><section class="card"><h2>سجل الحالات</h2>'+timeline(r)+'</section><section class="card"><h2>الكميات</h2><div class="kvs">'+kv('المعتمدة',fq(isApproved(r)?r.qty:0))+kv('المجدولة',fq(sched(r)))+kv('المسلّمة',fq(deliv(r)))+'</div>'+(isApproved(r)?'<div class="fa"><button class="btn" data-a="go" data-to="project" data-id="'+p.id+'" data-tab="dist">عرض التوزيع</button></div>':'')+(r.contract?'<h3>التعاقد</h3><p>رقم العقد '+r.contract.ref+' بتاريخ '+fmtD(r.contract.at)+'</p>':'')+'</section></div>'}
+
+/* ---------- Station manager ---------- */
+const smReqs=()=>S.requests.filter(r=>r.stationId===myStation().id&&r.status!=='draft');
+function smDash(){const L=smReqs(),s=myStation();const commit=sum(L.filter(r=>COMMIT.indexOf(r.status)>=0),r=>r.qty);
+ const pend=L.filter(r=>r.status==='pending_station');
+ return head('لوحة '+esc(s.name),'مرحبًا '+esc(S.users.sm.name))+
+ '<div class="stats">'+stat('إجمالي الطلبات الواردة',L.length)+stat('بانتظار ردك',pend.length,'warn')+stat('مقبولة',L.filter(r=>r.status!=='pending_station'&&r.status!=='rejected_station').length,'ok')+stat('مرفوضة',L.filter(r=>r.status==='rejected_station').length,'bad')+stat('الالتزامات الحالية',fq(commit),'info')+stat('المتاح بعد الالتزامات',fq(s.available-commit),'aqua')+'</div>'+
+ '<section class="card"><h2>طلبات بانتظار ردك</h2>'+(pend.length?pend.map(r=>'<div class="row"><div><b>'+r.no+' · '+esc(P(r.projectId).name)+'</b><p class="muted tiny">'+fq(r.qty)+' · البدء '+fmtD(r.startDate)+'</p></div>'+goBtn('مراجعة الطلب','request',r.id)+'</div>').join(''):empty('لا توجد طلبات بانتظار الرد'))+'</section>'}
+function smStation(){const s=myStation();const commit=sum(smReqs().filter(r=>COMMIT.indexOf(r.status)>=0),r=>r.qty);
+ const T=[['info','معلومات المحطة'],['cap','الإنتاج والتوفر'],['quality','جودة المياه'],['tankers','الصهاريج']];const t=ui.route.tab||'info';let b='';
+ if(t==='info')b='<form class="card form" novalidate>'+fld('stn','name','اسم المحطة')+fld('stn','loc','الموقع')+fld('stn','desc','نبذة عامة عن المحطة وقدراتها',{type:'textarea'})+fld('stn','contact','جهة التواصل')+'<div class="fa"><button type="button" class="btn primary" data-a="saveStn" data-k="info">حفظ التعديلات</button></div></form>';
+ if(t==='cap')b='<div class="stats">'+stat('الإنتاج اليومي',fq(s.capacity))+stat('المتاح حاليًا',fq(s.available),'aqua')+stat('الالتزامات الحالية',fq(commit),'info')+stat('المتاح بعد الالتزامات',fq(s.available-commit),'ok')+'</div><form class="card form" novalidate><div class="grid2">'+fld('stn','capacity','الإنتاج اليومي (م³)',{type:'number',min:0})+fld('stn','available','الكمية المتاحة حاليًا (م³)',{type:'number',min:0})+'</div><div class="fa"><button type="button" class="btn primary" data-a="saveStn" data-k="cap">تحديث التوفر</button></div></form>';
+ if(t==='quality')b='<form class="card form" novalidate><div class="grid2">'+fld('stn','tds','الملوحة TDS (ملغ/لتر)',{type:'number',min:0})+fld('stn','chl','الكلور الحر (ملغ/لتر)',{type:'number',step:'0.01',min:0})+fld('stn','ph','الرقم الهيدروجيني pH',{type:'number',step:'0.1',min:0})+fld('stn','cert','تاريخ آخر شهادة فحص',{type:'date'})+'</div>'+fld('stn','standard','معيار الجودة المعلن')+'<div class="fa"><button type="button" class="btn primary" data-a="saveStn" data-k="quality">حفظ بيانات الجودة</button></div></form>';
+ if(t==='tankers')b=tbl(['الرقم','السعة','الحالة',''],s.tankers.map(x=>[esc(x.plate),fq(x.cap),badge(x.state,x.state==='متاح'?'ok':'warn'),'<button class="btn sm" data-a="togTanker" data-id="'+x.id+'">تبديل الحالة</button>']))+'<form class="card form" novalidate><h2>إضافة صهريج</h2><div class="grid2">'+fld('tk','plate','رقم الصهريج',{req:1})+fld('tk','cap','السعة (م³)',{type:'number',min:1,req:1})+'</div><div class="fa"><button type="button" class="btn primary" data-a="addTanker">إضافة</button></div></form>';
+ return head('ملف المحطة',esc(s.name))+tabsBar(T)+b}
+function smRequests(){const q=ui.q.srs||'';const L=smReqs().filter(r=>!q||r.status===q);
+ return head('الطلبات الواردة','طلبات التوريد المرسلة إلى محطتك')+searchBox('srq','',selQ('srs',[['','كل الحالات'],['pending_station','بانتظار ردك'],['rejected_station','مرفوضة'],['pending_inspection','بانتظار الفحص'],['contract_finalized','تم التعاقد'],['in_progress','قيد التنفيذ'],['completed','مكتملة']],'الحالة')).replace(/<input[^>]*>/,'')+tbl(['رقم الطلب','المشروع','الكمية','الحالة','آخر تحديث',''],reqRows(L,'request'),'لا توجد طلبات')}
+function smRequest(){const r=R(ui.route.id),p=P(r.projectId);const s=myStation();const last=r.history[r.history.length-1];
+ const over=r.qty>s.available;
+ return head('الطلب '+r.no,esc(p.name),reqBadge(r),true)+
+ (r.status==='pending_station'?'<section class="card"><h2>الرد على الطلب</h2>'+(over?'<div class="note warn">الكمية المطلوبة ('+fq(r.qty)+') أكبر من المتاح حاليًا ('+fq(s.available)+').</div>':'<div class="note">قبولك للطلب يعني التزامك بالكمية والفترة وتاريخ البدء وكل المعايير. لا يعني اعتمادًا نهائيًا أو تعاقدًا، فالفحص الميداني والتعاقد مرحلتان لاحقتان.</div>')+'<div class="fa"><button class="btn ok" data-a="acceptReq" data-id="'+r.id+'">'+ic('check')+' قبول الطلب</button><button class="btn danger" data-a="rejectReq" data-id="'+r.id+'">'+ic('x')+' رفض الطلب</button></div></section>':'')+
+ (r.status==='rejected_station'?'<div class="note bad"><b>رفضتَ هذا الطلب</b><p>'+esc(last.note||'دون ملاحظات')+'</p></div>':'')+
+ '<section class="card"><h2>المشروع</h2><div class="kvs">'+kv('الجهة المنفذة',esc(p.employer))+kv('الجهة المسؤولة',esc(p.sponsor))+kv('فترة المشروع',fmtD(p.start)+' – '+fmtD(p.end))+'</div><p style="margin-top:10px">'+esc(p.desc)+'</p></section>'+reqTerms(r)+
+ (r.status!=='pending_station'&&!isRej(r)?'<section class="card"><h2>المراحل</h2>'+stages(r)+'</section>':'')}
+function smAgreements(){const L=smReqs().filter(r=>!isRej(r)&&r.status!=='pending_station');
+ return head('الطلبات المقبولة والاتفاقيات','تابع مراحل كل طلب قبلته')+(L.length?L.map(r=>'<section class="card"><div class="row"><div><h2 style="margin:0">'+r.no+' · '+esc(P(r.projectId).name)+'</h2><p class="muted tiny">'+fq(r.qty)+' · البدء '+fmtD(r.startDate)+'</p></div><div>'+reqBadge(r)+' '+goBtn('التفاصيل','request',r.id)+'</div></div>'+stages(r)+'</section>').join(''):'<div class="card">'+empty('لا توجد طلبات مقبولة بعد')+'</div>')}
+
+/* ---------- Field coordinator ---------- */
+const fcApproved=()=>S.requests.filter(r=>['inspection_approved'].concat(APPROVED).indexOf(r.status)>=0);
+const todayAppts=()=>pubAppts().filter(a=>a.date===S.today);
+function nextOf(a){const i=AS.findIndex(x=>x[0]===a.status);return AS[i+1]}
+function fcDash(){
+ const aw=S.requests.filter(r=>r.status==='pending_inspection'),ap=fcApproved();const act=ap.filter(r=>['completed','closed'].indexOf(r.status)<0&&r.status!=='inspection_approved');
+ const all=pubAppts();const tod=todayAppts();
+ return head('العمليات الميدانية','مرحبًا '+esc(S.users.fc.name)+' · اليوم '+dayName(S.today)+' '+fmtD(S.today),'<button class="btn" data-a="openPublic">'+ic('globe')+' الصفحة العامة</button>')+
+ '<div class="stats">'+stat('بانتظار الفحص',aw.length,'warn')+stat('طلبات معتمدة',ap.length,'info')+stat('عمليات مجدولة',all.filter(a=>a.status!=='completed'&&!a.closed).length,'aqua')+stat('مواعيد اليوم',tod.length,'info')+stat('عمليات مكتملة',all.filter(a=>a.status==='completed'||a.closed).length,'ok')+stat('إجمالي الكمية المجدولة',fq(sum(act,sched)),'aqua')+stat('المتبقي غير المجدول',fq(sum(act,remain)),'warn')+stat('مناطق مجدولة للخدمة',new Set(all.filter(a=>!a.closed).map(a=>a.areaId)).size)+'</div>'+
+ '<div class="split"><section class="card"><h2>مواعيد اليوم</h2>'+(tod.length?tod.map(a=>{const n=nextOf(a);return '<div class="row"><div><b>'+esc(AR(a.areaId).name)+'</b><p class="muted tiny">'+fmtT(a.time)+' · '+fq(a.qty)+'</p></div><div class="fa" style="margin:0">'+badge(AS.find(x=>x[0]===a.status)[1],a.status==='completed'?'ok':'info')+(a.closed?badge('مغلقة','ok'):goBtn('فتح','appt',a.id))+'</div></div>'}).join(''):empty('لا توجد مواعيد توزيع اليوم'))+'</section>'+
+ '<section class="card"><h2>بانتظار الفحص الميداني</h2>'+(aw.length?aw.map(r=>'<div class="row"><div><b>'+r.no+'</b><p class="muted tiny">'+esc(ST(r.stationId).name)+' · '+fq(r.qty)+'</p></div>'+goBtn('بدء الفحص','inspect',r.id)+'</div>').join(''):empty('لا توجد طلبات بانتظار الفحص'))+
+ (ap.filter(r=>['contract_finalized','pending_scheduling','inspection_approved'].indexOf(r.status)>=0).length?'<h3>جاهزة للتعاقد أو الجدولة</h3>'+ap.filter(r=>['contract_finalized','pending_scheduling','inspection_approved'].indexOf(r.status)>=0).map(r=>'<div class="row"><div><b>'+r.no+'</b><p class="muted tiny">'+reqBadge(r)+'</p></div>'+goBtn(r.status==='inspection_approved'?'إتمام التعاقد':'الجدولة',r.status==='inspection_approved'?'contract':'plan',r.id)+'</div>').join(''):'')+'</section></div>'}
+function fcInspections(){const aw=S.requests.filter(r=>r.status==='pending_inspection'),dn=S.requests.filter(r=>r.inspection);
+ return head('الفحص الميداني','تحقق من المحطة والمياه والمعايير المتفق عليها')+'<h2>بانتظار الفحص</h2>'+tbl(['رقم الطلب','المشروع','المحطة','الكمية','الحالة',''],aw.map(r=>[r.no,esc(P(r.projectId).name),esc(ST(r.stationId).name),fq(r.qty),reqBadge(r),goBtn('بدء الفحص','inspect',r.id)]),'لا توجد طلبات بانتظار الفحص')+'<h2>فحوصات سابقة</h2>'+tbl(['رقم الطلب','المحطة','تاريخ الفحص','النتيجة',''],dn.map(r=>[r.no,esc(ST(r.stationId).name),fmtD(r.inspection.at),reqBadge(r),goBtn('عرض',isRej(r)?'inspect':'plan',r.id)]),'لا توجد فحوصات سابقة')}
+function fcInspect(){const r=R(ui.route.id),f=D('insp');const done=r.status!=='pending_inspection';const res=done&&r.inspection?r.inspection.res:(f.res||{});
+ const items=r.criteria.concat(r.extra?['extra']:[]);const label=k=>k==='extra'?r.extra:CRIT[k];
+ const allOk=items.every(k=>res[k]==='ok');
+ return head('فحص الطلب '+r.no,esc(ST(r.stationId).name)+' · '+esc(P(r.projectId).name),reqBadge(r),true)+
+ '<section class="card"><h2>المراحل</h2>'+stages(r)+'</section>'+reqTerms(r)+
+ '<section class="card"><h2>قائمة الفحص</h2><p class="muted tiny">راجع كل معيار في الموقع ثم حدد النتيجة.</p>'+items.map(k=>'<div class="row"><div>'+esc(label(k))+'</div><div class="fa" style="margin:0">'+(done?badge(res[k]==='ok'?'مطابق':res[k]==='bad'?'غير مطابق':'لم يُفحص',res[k]==='ok'?'ok':res[k]==='bad'?'bad':''):'<button class="btn sm'+(res[k]==='ok'?' ok':'')+'" data-a="chk" data-k="'+k+'" data-v="ok">'+ic('check',14)+' مطابق</button><button class="btn sm'+(res[k]==='bad'?' danger':'')+'" data-a="chk" data-k="'+k+'" data-v="bad">'+ic('x',14)+' غير مطابق</button>')+'</div></div>').join('')+'</section>'+
+ (done?'<section class="card"><h2>نتيجة الفحص</h2><p>'+esc((r.inspection&&r.inspection.notes)||'لا توجد ملاحظات.')+'</p>'+(r.status==='inspection_approved'?'<div class="fa"><button class="btn primary" data-a="go" data-to="contract" data-id="'+r.id+'">متابعة إلى التعاقد</button></div>':'')+'</section>':
+ '<section class="card form"><h2>نتيجة الفحص والملاحظات</h2>'+fld('insp','notes','ملاحظات الفحص (اختيارية، مهمة عند الرفض)',{type:'textarea',rows:3})+'<div class="fa"><button class="btn ok" data-a="approveInsp" data-id="'+r.id+'"'+(allOk?'':' disabled')+'>'+ic('check')+' اعتماد نتيجة الفحص</button><button class="btn danger" data-a="rejectInsp" data-id="'+r.id+'">'+ic('x')+' رفض الطلب بعد الفحص</button></div>'+(allOk?'':'<p class="muted tiny">يُفعَّل الاعتماد عند مطابقة كل المعايير. الاعتماد لا يعني التعاقد؛ هو مرحلة منفصلة.</p>')+'</section>')}
+function fcContract(){const r=R(ui.route.id),p=P(r.projectId),s=ST(r.stationId);const done=r.status!=='inspection_approved';
+ return head('اتفاقية التوريد '+r.no,'المرحلة الثالثة: إتمام التعاقد عبر المنصة','',true)+
+ '<section class="card"><h2>المراحل</h2>'+stages(r)+'</section>'+
+ '<section class="card"><h2>ملخص الاتفاقية</h2><div class="kvs">'+kv('الطرف الأول',esc(p.employer)+' / '+esc(p.sponsor))+kv('الطرف الثاني',esc(s.name))+kv('الكمية الثابتة',fq(r.qty))+kv('فترة التوريد',fmtD(r.periodStart)+' – '+fmtD(r.periodEnd))+kv('تاريخ البدء',fmtD(r.startDate))+kv('نتيجة الفحص','مطابق لكل المعايير ('+(r.criteria.length+(r.extra?1:0))+')')+'</div></section>'+
+ (done?'<div class="note ok">تم التعاقد'+(r.contract?' برقم '+r.contract.ref+' بتاريخ '+fmtD(r.contract.at):'')+'.</div><div class="fa"><button class="btn primary" data-a="go" data-to="plan" data-id="'+r.id+'">اختيار المناطق والجدولة</button></div>':
+ '<section class="card form">'+chk('ctr','ok','أؤكد أن بيانات الاتفاقية صحيحة وأنها مطابقة لنتيجة الفحص الميداني.')+errOf('ctr','ok')+'<div class="fa"><button class="btn primary" data-a="finalize" data-id="'+r.id+'">'+ic('file')+' إتمام التعاقد</button></div></section>')}
+function fcApprovedList(){const L=fcApproved();
+ return head('الطلبات المعتمدة','طلبات اجتازت الفحص وجاهزة للتعاقد أو الجدولة أو قيد التنفيذ')+tbl(['رقم الطلب','المشروع','الكمية','المجدول','المتبقي','الحالة',''],L.map(r=>[r.no,esc(P(r.projectId).name),fq(r.qty),fq(sched(r)),fq(remain(r)),reqBadge(r),goBtn(r.status==='inspection_approved'?'إتمام التعاقد':'فتح',r.status==='inspection_approved'?'contract':'plan',r.id)]),'لا توجد طلبات معتمدة')}
+
+function allocDefaults(r){const d={};r.plan.forEach(x=>{d['q_'+x.areaId]=x.qty;d['v_'+x.areaId]=x.visits});return d}
+function allocSum(r){const f=D('alloc');return sum(r.plan,x=>f['q_'+x.areaId])}
+function allocSummary(r,s){const over=s>r.qty;return '<div class="row"><span>المخصص للمناطق</span><b class="num">'+fq(s)+'</b></div><div class="row"><span>الإجمالي المعتمد (ثابت)</span><b class="num">'+fq(r.qty)+'</b></div><div class="row"><span>المتبقي</span><b class="num" style="color:var(--'+(over?'bad':'ok')+')">'+fq(r.qty-s)+'</b></div>'+bar(s,r.qty,over)+(over?'<div class="note bad" style="margin-top:8px">المجموع يتجاوز الكمية المعتمدة. عدّل الكميات لتتمكن من الحفظ.</div>':'')}
+live.alloc=()=>{const r=R(ui.route.id),s=allocSum(r),el=$('#al-summary');if(el)el.innerHTML=allocSummary(r,s);const b=$('#al-save');if(b)b.disabled=s>r.qty};
+
+function fcPlan(){
+ const r=R(ui.route.id),p=P(r.projectId);
+ if(r.status==='inspection_approved')return head('جدولة '+r.no,'','',true)+'<div class="card">'+empty('يجب إتمام التعاقد أولًا','لا يمكن اختيار المناطق قبل التعاقد.')+'<div class="fa" style="justify-content:center"><button class="btn primary" data-a="go" data-to="contract" data-id="'+r.id+'">الانتقال إلى التعاقد</button></div></div>';
+ const ro=['completed','closed'].indexOf(r.status)>=0;const T=[['areas','1. اختيار المناطق'],['alloc','2. تخصيص الكميات'],['sched','3. جدول المواعيد'],['pub','4. النشر']];
+ const t=ui.route.tab||(r.plan.length?'sched':'areas');const L=apptsOf(r.id);let b='';
+ const hdr='<section class="card"><div class="row"><div><b>الكمية المعتمدة '+fq(r.qty)+'</b><p class="muted tiny">مجدول '+fq(sched(r))+' · متبقٍ <b>'+fq(remain(r))+'</b></p></div>'+reqBadge(r)+'</div>'+bar(sched(r),r.qty)+'</section>';
+ if(t==='areas'){const q=(ui.q.arq||'').trim();
+  b='<div class="muted">اختر المناطق المستفيدة بحسب الاحتياج والتقييم العام. تقييم المنطقة عامل مساعد للقرار ولا يستبعد أي منطقة تلقائيًا.</div>'+searchBox('arq','ابحث عن منطقة')+'<div class="cards">'+S.areas.filter(a=>!q||a.name.indexOf(q)>=0).map(a=>{const sel=r.plan.some(x=>x.areaId===a.id);return '<div class="acard'+(sel?' sel':'')+'"><div class="row" style="border:0;padding:0"><b>'+esc(a.name)+'</b>'+badge('احتياج '+a.need,NEED[a.need])+'</div><div class="tiny muted">'+a.hh.toLocaleString('en-US')+' أسرة · محافظة غزة</div><div class="mini"><span>التقييم '+avgEv(a)+'/5</span>'+bar(avgEv(a),5)+'</div><div class="tiny muted">زيارات سابقة: '+allVisits(a.id)+'</div><button class="btn sm'+(sel?' ok':'')+'" data-a="togArea" data-id="'+a.id+'"'+(ro?' disabled':'')+'>'+(sel?ic('check',14)+' مختارة':'اختيار المنطقة')+'</button></div>'}).join('')+'</div>'+(r.plan.length?'<div class="fa"><button class="btn primary" data-a="ptab" data-k="alloc">التالي: تخصيص الكميات</button></div>':'')}
+ if(t==='alloc'){
+  b=r.plan.length?'<form class="card form" novalidate><h2>الكمية والزيارات لكل منطقة</h2>'+tbl(['المنطقة','الكمية (م³)','عدد الزيارات','مجدول فعليًا'],r.plan.map(x=>[esc(AR(x.areaId).name),'<input id="alloc-q_'+x.areaId+'" name="q_'+x.areaId+'" data-f="alloc" type="number" min="0" step="1" value="'+esc(D('alloc')['q_'+x.areaId])+'" aria-label="كمية '+esc(AR(x.areaId).name)+'"'+(ro?' disabled':'')+'>','<input id="alloc-v_'+x.areaId+'" name="v_'+x.areaId+'" data-f="alloc" type="number" min="1" max="7" step="1" value="'+esc(D('alloc')['v_'+x.areaId])+'" aria-label="زيارات '+esc(AR(x.areaId).name)+'"'+(ro?' disabled':'')+'>',fq(sum(L.filter(a=>a.areaId===x.areaId),a=>a.qty))+' ('+L.filter(a=>a.areaId===x.areaId).length+' موعد)']))+'<div id="al-summary">'+allocSummary(r,allocSum(r))+'</div><div class="fa"><button type="button" id="al-save" class="btn primary" data-a="saveAlloc"'+(ro||allocSum(r)>r.qty?' disabled':'')+'>حفظ التخصيص</button><button type="button" class="btn" data-a="ptab" data-k="sched">التالي: الجدولة</button></div></form>':'<div class="card">'+empty('اختر المناطق أولًا')+'</div>'}
+ if(t==='sched'){
+  b=(r.plan.length?'<div class="fa"><button class="btn primary" data-a="addAppt" data-id="'+r.id+'"'+(ro?' disabled':'')+'>'+ic('plus')+' إضافة موعد</button><button class="btn" data-a="autoAppts" data-id="'+r.id+'"'+(ro?' disabled':'')+'>اقتراح مواعيد للمناطق الخالية</button></div>':'<div class="card">'+empty('اختر المناطق وخصص الكميات أولًا')+'</div>')+
+   r.plan.map(x=>{const al=L.filter(a=>a.areaId===x.areaId);return '<section class="card"><div class="row" style="padding-top:0"><div><h2 style="margin:0">'+esc(AR(x.areaId).name)+'</h2><p class="muted tiny">المخصص '+fq(x.qty)+' · الزيارات المخططة '+x.visits+' · المجدولة '+al.length+'</p></div></div>'+(al.length?tbl(['اليوم والتاريخ','الوقت المتوقع','الكمية','الحالة',''],al.map(a=>[dayName(a.date)+' '+fmtD(a.date),fmtT(a.time),fq(a.qty),a.closed?badge('مغلقة','ok'):badge(AS.find(y=>y[0]===a.status)[1],a.status==='completed'?'ok':'info'),'<div class="fa" style="margin:0"><button class="btn sm" data-a="go" data-to="appt" data-id="'+a.id+'">فتح</button>'+(a.status==='scheduled'&&!a.closed?'<button class="btn sm" data-a="editAppt" data-id="'+a.id+'" aria-label="تعديل">'+ic('edit',14)+'</button><button class="btn sm danger" data-a="delAppt" data-id="'+a.id+'" aria-label="حذف">'+ic('trash',14)+'</button>':'')+'</div>'])):'<p class="muted tiny">لا توجد مواعيد لهذه المنطقة بعد.</p>')+'</section>'}).join('')}
+ if(t==='pub'){
+  const allClosed=L.length>0&&L.every(a=>a.closed);
+  b='<section class="card"><h2>النشر للعامة</h2><ul class="clist"><li>'+(L.length?ic('check',16):'<span style="color:var(--bad)">'+ic('x',16)+'</span>')+'<span>يوجد '+L.length+' موعد في الجدول</span></li><li>'+(remain(r)===0?ic('check',16):'<span style="color:var(--warn)">'+ic('x',16)+'</span>')+'<span>الكمية غير المجدولة: '+fq(remain(r))+(remain(r)>0?' (يمكن النشر وإكمال الجدولة لاحقًا)':'')+'</span></li></ul>'+
+  '<p class="muted tiny" style="margin-top:8px">تظهر للعامة: المنطقة واليوم والتاريخ والوقت المتوقع والحالة فقط، دون أي بيانات داخلية.</p>'+
+  (r.published?'<div class="note ok">الجدول منشور ويراه السكان بلا تسجيل دخول.</div><div class="fa"><button class="btn" data-a="openPublic">'+ic('globe')+' عرض الصفحة العامة</button></div>':'<div class="fa"><button class="btn primary" data-a="publish" data-id="'+r.id+'"'+(L.length&&!ro?'':' disabled')+'>نشر الجدول الأسبوعي</button></div>')+
+  (r.published&&!ro?'<h3>إكمال الطلب</h3><p class="muted tiny">بعد إغلاق كل عمليات التوزيع يمكنك اعتماد اكتمال الطلب، فيراجعه منسق المشروع.</p><div class="fa"><button class="btn ok" data-a="completeReq" data-id="'+r.id+'"'+(allClosed?'':' disabled')+'>اعتماد اكتمال الطلب</button></div>':'')+'</section>'}
+ return head('تخطيط '+r.no,esc(p.name),'',true)+hdr+tabsBar(T)+b}
+
+function fcSchedule(){
+ const rq=ui.q.fr||'',ar=ui.q.fa||'';const L=pubAppts().filter(a=>(!rq||a.reqId===rq)&&(!ar||a.areaId===ar));
+ return head('الجدول الأسبوعي للتوزيع','كل مواعيد التوزيع المنشورة',weekNav('fcWeek')+'<button class="btn" data-a="openPublic">'+ic('globe')+' الصفحة العامة</button>')+
+ '<div class="search">'+selQ('fr',[['','كل الطلبات']].concat(fcApproved().map(r=>[r.id,r.no+' · '+P(r.projectId).name])),'الطلب')+selQ('fa',[['','كل المناطق']].concat(S.areas.map(a=>[a.id,a.name])),'المنطقة')+'</div>'+weekGrid(ui.fcWeek,L,'goAppt',true)}
+function fcAppt(){
+ const a=AP(ui.route.id),r=R(a.reqId),p=P(r.projectId),ar=AR(a.areaId);const si=AS.findIndex(x=>x[0]===a.status);const nx=AS[si+1];const f=D('rec');
+ const closedMsg=a.closed?'<div class="note ok">هذه العملية مغلقة ولا يمكن تعديلها.</div>':'';
+ const chkOk=[{ok:a.status==='completed',t:'حالة التوزيع «اكتمل التوزيع»'},{ok:a.actual!==''&&a.actual!=null,t:'تسجيل الكمية المسلّمة فعليًا'},{ok:a.media.length>0,t:'إرفاق توثيق (اختياري ويكمّل التسجيل ولا يغني عنه)',opt:1}];
+ const canClose=chkOk[0].ok&&chkOk[1].ok&&D('close').rev;
+ return head('عملية توزيع: '+esc(ar.name),dayName(a.date)+' '+fmtD(a.date)+' · '+fmtT(a.time),(a.closed?badge('مغلقة','ok'):''),true)+closedMsg+
+ '<section class="card"><div class="kvs">'+kv('المشروع',esc(p.name))+kv('طلب التوريد',r.no)+kv('المنطقة',esc(ar.name))+kv('الكمية المخصصة','<span class="num">'+fq(a.qty)+'</span>')+kv('الكمية المسلّمة',a.actual===''||a.actual==null?'—':'<span class="num">'+fq(a.actual)+'</span>')+kv('ملاحظات الجدولة',esc(a.sn||'—'))+'</div></section>'+
+ '<section class="card"><h2>تحديث حالة التوزيع</h2><div class="steps" aria-label="مراحل التوزيع">'+AS.map((x,i)=>'<span class="st '+(i<si?'done':i===si?'cur':'')+'">'+x[1]+'</span>').join('')+'</div>'+
+ (!r.published?'<div class="note warn" style="margin-top:10px">انشر الجدول أولًا لتبدأ تحديث الحالات.</div>':'')+
+ '<div class="fa"><button class="btn primary" data-a="nextStatus" data-id="'+a.id+'"'+(a.closed||!nx||!r.published?' disabled':'')+'>'+(nx?'الانتقال إلى: '+nx[1]:'اكتمل التوزيع')+'</button></div><p class="muted tiny">حالات تجريبية بدون تتبع حقيقي للصهريج.</p></section>'+
+ '<section class="card form"><h2>سجل التوزيع</h2><div class="grid2">'+fld('rec','actual','الكمية المسلّمة فعليًا (م³)',{type:'number',min:0,step:'1',ro:a.closed})+fld('rec','date','تاريخ التوزيع الفعلي',{type:'date',ro:a.closed})+fld('rec','time','وقت التوزيع الفعلي',{type:'time',ro:a.closed})+'</div>'+fld('rec','notes','ملاحظات ميدانية',{type:'textarea',rows:3,ro:a.closed})+
+ (+f.actual>a.qty?'<div class="note warn">الكمية المسلّمة أكبر من المخصصة للموعد.</div>':'')+'<div class="fa"><button type="button" class="btn primary" data-a="saveRec" data-id="'+a.id+'"'+(a.closed?' disabled':'')+'>حفظ السجل</button></div></section>'+
+ '<section class="card"><h2>الصور والفيديو</h2><p class="muted tiny">التوثيق مرتبط بهذه العملية فقط وهو دليل مكمّل ولا يغني عن تسجيل الكميات. لا تنشر وجوه المستفيدين دون موافقتهم.</p>'+
+ (a.closed?'':'<div class="form">'+chk('md','consent','تم الحصول على موافقة المستفيدين الظاهرين على نشر الملف')+'<div class="fa"><label class="btn" for="media-file">'+ic('plus',16)+' رفع صورة أو فيديو</label><input id="media-file" type="file" accept="image/*,video/*" multiple style="position:absolute;opacity:0;width:1px;height:1px"><button class="btn" data-a="sampleMedia" data-id="'+a.id+'" data-t="photo">'+ic('camera',16)+' إضافة صورة تجريبية</button><button class="btn" data-a="sampleMedia" data-id="'+a.id+'" data-t="video">'+ic('video',16)+' إضافة فيديو تجريبي</button></div></div>')+
+ (a.media.length?'<div class="media" style="margin-top:12px">'+a.media.map(m=>'<div>'+mediaTile(m)+(a.closed?'':'<div class="fa"><button class="btn sm" data-a="togConsent" data-id="'+a.id+'" data-m="'+m.id+'">'+(m.consent?'سحب الموافقة':'تسجيل موافقة')+'</button><button class="btn sm danger" data-a="delMedia" data-id="'+a.id+'" data-m="'+m.id+'" aria-label="حذف">'+ic('trash',14)+'</button></div>')+'</div>').join('')+'</div>':'<div style="margin-top:8px" class="muted">لم يُرفع أي ملف بعد.</div>')+'</section>'+
+ '<section class="card"><h2>إغلاق عملية التوزيع</h2><p class="muted tiny">إغلاق هذه العملية مستقل عن إغلاق المشروع الذي يقوم به منسق المشروع.</p><ul class="clist">'+chkOk.map(x=>'<li>'+(x.ok?ic('check',16):'<span style="color:'+(x.opt?'var(--muted)':'var(--bad)')+'">'+ic('x',16)+'</span>')+'<span>'+x.t+'</span></li>').join('')+'</ul>'+
+ (a.closed?'':'<div class="form">'+chk('close','rev','راجعت الكميات والشروط والتوثيق وأؤكد اكتمال العملية.')+'<div class="fa"><button class="btn ok" data-a="closeAppt" data-id="'+a.id+'"'+(canClose?'':' disabled')+'>'+ic('check')+' إغلاق العملية</button></div></div>')+'</section>'}
+
+function fcAreas(){
+ return head('المناطق وتقييمها','تقييم عام يساعدك على توزيع المواعيد بعدالة')+'<div class="note">التقييم أداة مساندة للقرار فقط؛ لا يستبعد النظام أي منطقة تلقائيًا بسبب تقييم منخفض.</div><div class="cards">'+
+ S.areas.map(a=>'<article class="acard"><div class="row" style="border:0;padding:0"><h2 style="margin:0">'+esc(a.name)+'</h2>'+badge('احتياج '+a.need,NEED[a.need])+'</div><div class="tiny muted">'+a.hh.toLocaleString('en-US')+' أسرة · آخر تحديث '+fmtD(a.ev.at)+'</div>'+EV.map(e=>'<div class="mini"><span style="min-width:110px">'+e[1]+'</span>'+bar(a.ev[e[0]],5)+'<b>'+a.ev[e[0]]+'</b></div>').join('')+'<div class="row" style="padding-bottom:0"><b>المتوسط '+avgEv(a)+' / 5</b><button class="btn sm" data-a="evalArea" data-id="'+a.id+'">تحديث التقييم</button></div>'+(a.ev.note?'<p class="tiny muted">'+esc(a.ev.note)+'</p>':'')+'</article>').join('')+'</div>'}
+function fcReports(){const rs=fcApproved().filter(r=>r.status!=='inspection_approved');const ap=pubAppts();
+ return head('التقارير الميدانية','ملخص المخصص والمسلّم')+'<div class="stats">'+stat('عمليات التوزيع',ap.length)+stat('مغلقة',ap.filter(a=>a.closed).length,'ok')+stat('بانتظار الإغلاق',ap.filter(a=>a.status==='completed'&&!a.closed).length,'warn')+stat('المسلّم فعليًا',fq(sum(ap.filter(a=>a.status==='completed'),a=>a.actual)),'aqua')+'</div>'+
+ '<h2>حسب الطلب</h2>'+tbl(['الطلب','المعتمد','المجدول','المسلّم','الحالة'],rs.map(r=>[r.no,fq(r.qty),fq(sched(r)),fq(deliv(r)),reqBadge(r)]),'لا توجد بيانات')+
+ '<h2>حسب المنطقة</h2>'+tbl(['المنطقة','الزيارات','المخصص','المسلّم','الفرق'],S.areas.filter(a=>ap.some(x=>x.areaId===a.id)).map(a=>{const L=ap.filter(x=>x.areaId===a.id),d=L.filter(x=>x.status==='completed');return [esc(a.name),L.length,fq(sum(L,x=>x.qty)),fq(sum(d,x=>x.actual)),fq(sum(d,x=>x.actual)-sum(d,x=>x.qty))]}))}
+
+/* ---------- shared screens ---------- */
+function notifView(){const L=myNotes();
+ return head('الإشعارات','',L.some(n=>!n.read)?'<button class="btn sm" data-a="readAll">تحديد الكل كمقروء</button>':'')+(L.length?'<div class="card">'+L.map(n=>'<div class="row"><div><b'+(n.read?' style="font-weight:400"':'')+'>'+(n.read?'':'● ')+esc(n.text)+'</b><p class="muted tiny">'+fmtD(n.at)+'</p></div>'+(n.ln?'<button class="btn sm" data-a="openNote" data-id="'+n.id+'">فتح</button>':'')+'</div>').join('')+'</div>':'<div class="card">'+empty('لا توجد إشعارات')+'</div>')}
+function profView(){const u=S.users[ui.role];
+ return head('الحساب والإعدادات','')+'<form class="card form" novalidate><h2>بيانات الحساب</h2><div class="grid2">'+fld('prof','name','الاسم')+fld('prof','email','البريد الإلكتروني',{type:'email'})+fld('prof','phone','الهاتف')+'<div class="field"><label>الدور</label><input readonly value="'+esc(RL[ui.role])+'"></div></div><h3>تفضيلات الإشعارات</h3>'+chk('prof','n1','إشعارات تغيّر حالة الطلبات')+chk('prof','n2','تذكير بمواعيد التوزيع')+'<div class="fa"><button type="button" class="btn primary" data-a="saveProf">حفظ</button></div></form>'}
+
+/* ---------- login & public ---------- */
+function loginView(){
+ return '<div class="login"><section class="hero"><div style="display:flex;gap:12px;align-items:center">'+logo(46)+'<span style="font-family:var(--font-head);font-size:18px">Water Map Rescue · WMR</span></div><h1>توزيع مياه الشرب بعدالة وشفافية</h1><p>منصة واحدة تربط منسق المشروع ومسؤول محطة التحلية والمنسق الميداني: من إنشاء المشروع وطلب التوريد، إلى الفحص والتعاقد والجدولة والتوزيع والتوثيق، حتى إغلاق المشروع.</p></section>'+
+ '<section><h2>اختر دورًا للدخول التجريبي</h2><div class="roles">'+
+ [['pc','منسق المشروع','folder','ينشئ المشروع، يختار المحطة، يرسل طلب التوريد، ويراجع التقارير ويغلق المشروع.'],['sm','مسؤول محطة التحلية','station','يدير ملف المحطة وتوفر المياه والصهاريج، ويقبل طلبات التوريد أو يرفضها.'],['fc','المنسق الميداني','truck','يفحص المحطة، يتعاقد، يوزّع الكميات على المناطق، يجدول ويوثّق ويغلق العمليات.']].map(x=>'<button class="rolecard" data-a="login" data-r="'+x[0]+'"><h2>'+ic(x[2],22)+x[1]+'</h2><span class="muted">'+x[3]+'</span><span class="go">دخول كـ '+x[1]+' ←</span></button>').join('')+'</div></section>'+
+ '<section><h2>مسار العمل</h2><ol class="flow"><li><b>1</b> إنشاء المشروع</li><li><b>2</b> اختيار المحطة وإرسال الطلب</li><li><b>3</b> قبول المحطة</li><li><b>4</b> الفحص الميداني</li><li><b>5</b> التعاقد</li><li><b>6</b> اختيار المناطق والجدولة</li><li><b>7</b> النشر للسكان</li><li><b>8</b> التوزيع والتوثيق</li><li><b>9</b> إغلاق العمليات والمشروع</li></ol></section>'+
+ '<div class="fa"><button class="btn" data-a="openPublic">'+ic('globe')+' عرض صفحة جدول التوزيع العامة (بلا تسجيل دخول)</button></div></div>'}
+function pubView(){
+ const ws=ui.pubWeek,fa=ui.q.pa||'';const L=pubAppts().filter(a=>!fa||a.areaId===fa);
+ const days=[0,1,2,3,4,5,6].map(i=>addDays(ws,i)).filter(d=>L.some(a=>a.date===d));
+ return '<div class="pub"><div class="pubh">'+logo(40)+'<div><h1>جدول توزيع المياه</h1><p class="muted">مواعيد وصول صهاريج المياه إلى منطقتك خلال الأسبوع</p></div></div>'+
+ '<div class="chips" role="group" aria-label="اختيار المنطقة"><button class="chip'+(fa?'':' on')+'" data-a="pubArea" data-id="">كل المناطق</button>'+S.areas.map(a=>'<button class="chip'+(fa===a.id?' on':'')+'" data-a="pubArea" data-id="'+a.id+'">'+esc(a.name)+'</button>').join('')+'</div>'+
+ '<div class="fa" style="justify-content:space-between;align-items:center"><button class="btn sm" data-a="wk" data-k="pubWeek" data-n="-7">'+ic('arrow',14)+' الأسبوع السابق</button><b>'+fmtD(ws)+' – '+fmtD(addDays(ws,6))+'</b><button class="btn sm" data-a="wk" data-k="pubWeek" data-n="7">الأسبوع التالي</button></div>'+
+ (days.length?days.map(d=>'<section class="pubday"><h2><span>'+dayName(d)+'</span><span class="muted">'+fmtD(d)+(d===S.today?' · اليوم':'')+'</span></h2>'+L.filter(a=>a.date===d).map(a=>{const s=pubStatus(a);return '<button class="pubrow" data-a="pubAppt" data-id="'+a.id+'"><span class="t">'+fmtT(a.time)+'</span><span class="a">'+esc(AR(a.areaId).name)+'</span>'+badge(s[0],s[1])+'</button>'}).join('')+'</section>').join(''):'<div class="card">'+empty('لا توجد مواعيد منشورة في هذا الأسبوع','جرّب أسبوعًا آخر أو منطقة أخرى.')+'</div>')+
+ '<p class="muted tiny">المواعيد متوقعة وقد تتغير بحسب ظروف الوصول. لا تعرض هذه الصفحة أي بيانات خاصة بالمشاريع.</p></div>'}
+
+/* ---------- shell ---------- */
+const NAV={
+ pc:[['dashboard','الرئيسية','home'],['projects','المشاريع','folder'],['stations','محطات التحلية','station'],['requests','طلبات التوريد','file'],['notifications','الإشعارات','bell'],['profile','الحساب','user']],
+ sm:[['dashboard','الرئيسية','home'],['station','ملف المحطة','station'],['requests','الطلبات الواردة','file'],['agreements','المقبولة والاتفاقيات','clip'],['notifications','الإشعارات','bell'],['profile','الحساب','user']],
+ fc:[['dashboard','الرئيسية','home'],['inspections','الفحص الميداني','clip'],['approved','الطلبات المعتمدة','file'],['schedule','الجدول الأسبوعي','cal'],['areas','المناطق والتقييم','map'],['reports','التقارير','report'],['notifications','الإشعارات','bell'],['profile','الحساب','user']]};
+const PARENT={project:'projects',projectNew:'projects',reqNew:'stations',inspect:'inspections',contract:'approved',plan:'approved',appt:'schedule'};
+function activeNav(){const n=ui.route.name;if(ui.role==='pc'&&n==='station')return 'stations';if(ui.role==='pc'&&n==='request')return 'requests';if(ui.role==='sm'&&n==='request')return 'requests';return PARENT[n]||n}
+function demoBar(){
+ return '<div class="demo"><div class="grp"><span class="tag">نموذج تجريبي</span><span>بيانات وهمية للعرض</span></div><div class="grp">'+
+ (ui.role!=='public'?'<label for="d-role">الدور:</label><select id="d-role" data-a="switchRole" aria-label="تبديل الدور">'+['pc','sm','fc'].map(k=>'<option value="'+k+'"'+(ui.role===k?' selected':'')+'>'+RL[k]+'</option>').join('')+'</select><button class="btn" data-a="openPublic">'+'الصفحة العامة</button><button class="btn" data-a="logout">خروج</button>':'<button class="btn" data-a="exitPublic">العودة إلى النظام</button>')+
+ '<button class="btn" data-a="resetDemo">إعادة ضبط البيانات</button></div></div>'}
+function view(){const n=ui.route.name,r=ui.role;if(n==='notifications')return notifView();if(n==='profile')return profView();
+ const M={pc:{dashboard:pcDash,projects:pcProjects,projectNew:pcProjectNew,project:pcProject,stations:pcStations,station:pcStation,reqNew:pcReqNew,requests:pcRequests,request:pcRequest},
+  sm:{dashboard:smDash,station:smStation,requests:smRequests,request:smRequest,agreements:smAgreements},
+  fc:{dashboard:fcDash,inspections:fcInspections,inspect:fcInspect,contract:fcContract,approved:fcApprovedList,plan:fcPlan,schedule:fcSchedule,appt:fcAppt,areas:fcAreas,reports:fcReports}};
+ return (M[r][n]||M[r].dashboard)()}
+function navCount(role,k){if(k==='notifications'){const c=unread(role);return c?'<span class="cnt">'+c+'</span>':''}
+ if(role==='sm'&&k==='requests'){const c=smReqs().filter(r=>r.status==='pending_station').length;return c?'<span class="cnt">'+c+'</span>':''}
+ if(role==='fc'&&k==='inspections'){const c=S.requests.filter(r=>r.status==='pending_inspection').length;return c?'<span class="cnt">'+c+'</span>':''}return ''}
+function modalHtml(){const m=ui.modal;if(!m)return '';
+ return '<div class="modal-bg"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><h2 id="mt" style="margin:0">'+m.title+'</h2>'+(typeof m.body==='function'?m.body():m.body)+'<div class="mact">'+(m.actions||[]).map((x,i)=>'<button class="btn '+(x.cls||'')+'" data-a="mact" data-i="'+i+'">'+x.label+'</button>').join('')+'</div></div></div>'}
+function render(){
+ const ae=document.activeElement;const fid=ae&&ae.id,ss=ae&&ae.selectionStart,se=ae&&ae.selectionEnd;
+ let h;
+ if(!ui.role)h=loginView();
+ else if(ui.role==='public')h=demoBar()+pubView();
+ else{const nav=NAV[ui.role],act=activeNav();
+  h=demoBar()+'<div class="shell"><aside class="side'+(ui.menu?' open':'')+'" aria-label="التنقل"><div class="brand">'+logo(34)+'<div>WMR<small>'+RL[ui.role]+'</small></div></div>'+
+   nav.map(n=>'<button class="nav'+(act===n[0]?' on':'')+'" data-a="nav" data-to="'+n[0]+'"'+(act===n[0]?' aria-current="page"':'')+'>'+ic(n[2])+'<span>'+n[1]+'</span>'+navCount(ui.role,n[0])+'</button>').join('')+
+   '<div class="who"><b>'+esc(S.users[ui.role].name)+'</b>'+esc(S.users[ui.role].title)+(ui.role==='sm'?'<br>'+esc(myStation().name):'')+'</div></aside>'+(ui.menu?'<div class="bd" data-a="menu"></div>':'')+
+   '<main class="main"><button class="btn menu-btn" data-a="menu" aria-label="القائمة">'+ic('menu')+' القائمة</button>'+view()+'</main></div>'}
+ $('#app').innerHTML=h;$('#modal').innerHTML=modalHtml();
+ if(fid){const el=document.getElementById(fid);if(el){el.focus();try{if(ss!=null)el.setSelectionRange(ss,se)}catch(e){}}}
+}
+function enter(rt){const n=rt.name;
+ if(n==='inspect')openForm('insp',{res:{}});
+ if(n==='contract')openForm('ctr',{});
+ if(n==='plan'){const r=R(rt.id);openForm('alloc',allocDefaults(r))}
+ if(n==='appt'){const a=AP(rt.id);openForm('rec',{actual:a.actual,date:a.actualDate||S.today,time:a.actualTime||nowT(),notes:a.notes});openForm('close',{});openForm('md',{consent:false})}
+ if(ui.role==='sm'&&n==='station')openForm('stn',Object.assign({},myStation()));
+ if(n==='profile')openForm('prof',Object.assign({n1:true,n2:true},S.users[ui.role]));
+}
+const _go=go;go=function(name,p){const rt=Object.assign({name:name},p||{});enter(rt);_go(name,p)};
+function nav(to){ui.route={name:to};ui.stack=[];ui.menu=false;ui.modal=null;enter(ui.route);render();window.scrollTo(0,0)}
+function back(){ui.route=ui.stack.pop()||{name:'dashboard'};enter(ui.route);ui.modal=null;render();window.scrollTo(0,0)}
+function validate(f,rules){const e={};rules.forEach(r=>{if(!r[1]())e[r[0]]=r[2]});ui.err[f]=e;return !Object.keys(e).length}
+const F=f=>D(f);
+function confirmM(o){ui.modal={title:o.title,body:o.body,actions:[{label:o.ok,cls:o.cls||'primary',fn:o.fn},{label:'إلغاء'}]};render()}
+
+/* ---------- actions ---------- */
+const A={
+ login(d){ui.role=d.r;ui.route={name:'dashboard'};ui.stack=[];enter(ui.route);render();window.scrollTo(0,0)},
+ logout(){ui.role=null;ui.modal=null;render()},
+ resetDemo(){S=seed();Object.keys(ui.draft).forEach(k=>delete ui.draft[k]);ui.q={};ui.route={name:'dashboard'};ui.stack=[];ui.modal=null;ui.fcWeek=ui.pubWeek=weekStartOf(S.today);enter(ui.route);render();toast('أُعيدت البيانات التجريبية إلى وضعها الأول')},
+ nav(d){nav(d.to)},back(){back()},go(d){go(d.to,{id:d.id,tab:d.tab})},menu(){ui.menu=!ui.menu;render()},
+ tab(d){ui.route.tab=d.k;render()},ptab(d){ui.route.tab=d.k;render();window.scrollTo(0,0)},
+ wk(d){ui[d.k]=addDays(ui[d.k],+d.n);render()},
+ openPublic(){ui.prevRole=ui.role;ui.role='public';ui.modal=null;render();window.scrollTo(0,0)},
+ exitPublic(){ui.role=ui.prevRole||null;ui.modal=null;render()},
+ pubArea(d){ui.q.pa=d.id;render()},
+ pubAppt(d){const a=AP(d.id),s=pubStatus(a);modal({title:'موعد توزيع المياه',body:'<div class="kvs">'+kv('المنطقة',esc(AR(a.areaId).name))+kv('اليوم',dayName(a.date))+kv('التاريخ',fmtD(a.date))+kv('الوقت المتوقع للوصول',fmtT(a.time))+kv('الحالة',badge(s[0],s[1]))+'</div><p class="muted tiny">الوقت تقديري وقد يتأخر الصهريج بحسب الظروف.</p>',actions:[{label:'إغلاق'}]})},
+ goAppt(d){go('appt',{id:d.id})},
+ /* project coordinator */
+ newProject(){openForm('proj',{quality:'مياه صالحة للشرب، TDS ≤ 500 ملغ/لتر',start:S.today});go('projectNew')},
+ saveProject(){const f=F('proj');
+  if(!validate('proj',[['name',()=>f.name&&f.name.trim(),'أدخل اسم المشروع'],['desc',()=>f.desc&&f.desc.trim(),'أدخل وصف المشروع وأهدافه'],['employer',()=>f.employer&&f.employer.trim(),'أدخل الجهة المنفذة'],['sponsor',()=>f.sponsor&&f.sponsor.trim(),'أدخل الجهة المسؤولة'],['start',()=>f.start,'اختر تاريخ البدء'],['end',()=>f.end&&f.end>=f.start,'اختر تاريخ انتهاء بعد تاريخ البدء'],['qty',()=>+f.qty>0,'أدخل كمية أكبر من صفر'],['quality',()=>f.quality&&f.quality.trim(),'أدخل متطلبات الجودة']])){render();toast('أكمل الحقول المطلوبة','bad');return}
+  const p={id:'p'+(++S.seq.p),name:f.name.trim(),desc:f.desc.trim(),employer:f.employer.trim(),sponsor:f.sponsor.trim(),budget:f.budget||'',start:f.start,end:f.end,qty:+f.qty,quality:f.quality.trim(),other:f.other||'',status:'planning'};
+  S.projects.push(p);ui.stack=[{name:'projects'}];ui.route={name:'project',id:p.id};enter(ui.route);render();window.scrollTo(0,0);toast('تم حفظ المشروع. الخطوة التالية: اختيار محطة')},
+ newReqFor(d){ui.q.sp=d.id;go('stations')},
+ pickStation(d){const pid=ui.q.sp;if(!pid){toast('اختر المشروع أولًا من أعلى الصفحة','bad');window.scrollTo(0,0);return}
+  const p=P(pid),c={};['quality','qty','start'].forEach(k=>c['c_'+k]=true);
+  openForm('req',Object.assign({project:pid,stationId:d.id,qty:p.qty,quality:p.quality,periodStart:p.start,periodEnd:p.end,startDate:p.start},c));go('reqNew')},
+ reselect(d){const r=R(d.id);ui.q.sp=r.projectId;go('stations');toast('اختر محطة أخرى لإرسال طلب جديد')},
+ sendReq(){A._req(true)},draftReq(){A._req(false)},
+ _req(send){const f=F('req');const crit=Object.keys(CRIT).filter(k=>f['c_'+k]);
+  if(!validate('req',[['qty',()=>+f.qty>0,'أدخل كمية أكبر من صفر'],['quality',()=>f.quality&&f.quality.trim(),'أدخل الجودة المطلوبة'],['periodStart',()=>f.periodStart,'اختر بداية الفترة'],['periodEnd',()=>f.periodEnd&&f.periodEnd>=f.periodStart,'نهاية الفترة يجب أن تكون بعد بدايتها'],['startDate',()=>f.startDate&&f.startDate>=f.periodStart&&f.startDate<=f.periodEnd,'تاريخ البدء يجب أن يقع ضمن فترة التوريد'],['crit',()=>crit.length>0,'اختر معيارًا واحدًا على الأقل']])){render();toast('راجع الحقول المطلوبة','bad');return}
+  const id='r'+(++S.seq.r),no='WMR-2026-'+pad(S.seq.r).padStart(3,'0');
+  const r={id:id,no:no,projectId:f.project,stationId:f.stationId,qty:+f.qty,quality:f.quality.trim(),periodStart:f.periodStart,periodEnd:f.periodEnd,startDate:f.startDate,criteria:crit,extra:f.extra||'',status:'draft',published:false,plan:[],history:[{s:'draft',at:S.today,by:'منسق المشروع',note:''}]};
+  S.requests.push(r);if(send){setStatus(r,'pending_station','منسق المشروع');notify('sm:'+r.stationId,'طلب توريد جديد '+no+' بانتظار ردك','request',id)}
+  ui.stack=[{name:'requests'}];ui.route={name:'request',id:id};render();window.scrollTo(0,0);toast(send?'أُرسل الطلب إلى مسؤول المحطة':'حُفظ الطلب كمسودة')},
+ sendDraft(d){const r=R(d.id);setStatus(r,'pending_station','منسق المشروع');notify('sm:'+r.stationId,'طلب توريد جديد '+r.no+' بانتظار ردك','request',r.id);render();toast('أُرسل الطلب إلى المحطة')},
+ delDraft(d){S.requests=S.requests.filter(r=>r.id!==d.id);back();toast('حُذفت المسودة')},
+ closeProject(d){const p=P(d.id);confirmM({title:'إغلاق المشروع',body:'<p>سيُغلق المشروع «'+esc(p.name)+'» نهائيًا بعد مراجعة الكميات وسجلات التوزيع والتوثيق. هل تريد المتابعة؟</p>',ok:'تأكيد الإغلاق',cls:'ok',fn(){p.status='closed';p.closedAt=S.today;S.requests.filter(r=>r.projectId===p.id&&r.status==='completed').forEach(r=>setStatus(r,'closed','منسق المشروع','أُغلق مع المشروع'));toast('تم إغلاق المشروع')}})},
+ simEnd(d){const p=P(d.id);S.today=p.end;toast('تمت محاكاة بلوغ تاريخ '+fmtD(p.end));render()},
+ /* station manager */
+ acceptReq(d){const r=R(d.id);openForm('acc',{});ui.modal={title:'قبول طلب التوريد',body:()=>'<p>بقبولك تلتزم المحطة بما يلي:</p><ul class="clist"><li>'+ic('check',16)+'<span>الكمية: <b>'+fq(r.qty)+'</b></span></li><li>'+ic('check',16)+'<span>فترة التوريد: '+fmtD(r.periodStart)+' – '+fmtD(r.periodEnd)+'</span></li><li>'+ic('check',16)+'<span>تاريخ البدء: '+fmtD(r.startDate)+'</span></li><li>'+ic('check',16)+'<span>جميع المعايير ('+r.criteria.length+')</span></li></ul><div class="note">القبول لا يعني الاعتماد النهائي أو التعاقد. سيفحص المنسق الميداني المحطة أولًا.</div>'+chk('acc','ok','أؤكد التزام المحطة بكل ما سبق.')+errOf('acc','ok'),actions:[{label:'تأكيد القبول',cls:'ok',fn(){if(!F('acc').ok){ui.err.acc={ok:'يلزم تأكيد الالتزام للمتابعة'};render();return false}
+   setStatus(r,'accepted_station','مسؤول المحطة','التزام كامل بالكمية والفترة والمعايير');setStatus(r,'pending_inspection','النظام','أُحيل إلى المنسق الميداني');
+   notify('pc','قبلت '+myStation().name+' الطلب '+r.no,'request',r.id);notify('fc','طلب جديد بانتظار الفحص الميداني: '+r.no,'inspect',r.id);toast('تم القبول وإحالة الطلب إلى المنسق الميداني')}},{label:'إلغاء'}]};render()},
+ rejectReq(d){const r=R(d.id);openForm('rej',{});ui.modal={title:'رفض طلب التوريد',body:()=>'<p class="muted">يمكنك ذكر السبب ليساعد منسق المشروع في اختيار محطة أخرى (اختياري).</p>'+fld('rej','notes','سبب الرفض / ملاحظات',{type:'textarea',rows:3}),actions:[{label:'تأكيد الرفض',cls:'danger',fn(){setStatus(r,'rejected_station','مسؤول المحطة',(F('rej').notes||'').trim());notify('pc','رفضت '+myStation().name+' الطلب '+r.no,'request',r.id);toast('تم رفض الطلب وإشعار منسق المشروع')}},{label:'إلغاء'}]};render()},
+ saveStn(d){const s=myStation(),f=F('stn');const K={info:['name','loc','desc','contact'],cap:['capacity','available'],quality:['tds','chl','ph','cert','standard']};const num=['capacity','available','tds','chl','ph'];
+  K[d.k].forEach(k=>{s[k]=num.indexOf(k)>=0?+f[k]:f[k]});toast('تم حفظ التعديلات');render()},
+ togTanker(d){const t=myStation().tankers.find(x=>x.id===d.id);t.state=t.state==='متاح'?'قيد الصيانة':'متاح';render()},
+ addTanker(){const f=F('tk');if(!validate('tk',[['plate',()=>f.plate&&f.plate.trim(),'أدخل رقم الصهريج'],['cap',()=>+f.cap>0,'أدخل سعة صحيحة']])){render();return}
+  myStation().tankers.push({id:'t'+Date.now(),plate:f.plate.trim(),cap:+f.cap,state:'متاح'});ui.draft.tk={};toast('أُضيف الصهريج');render()},
+ /* field coordinator */
+ chk(d){const f=F('insp');f.res=f.res||{};f.res[d.k]=d.v;render()},
+ approveInsp(d){const r=R(d.id),f=F('insp');r.inspection={res:Object.assign({},f.res),notes:(f.notes||'').trim(),at:S.today};setStatus(r,'inspection_approved','المنسق الميداني','جميع المعايير مطابقة');notify('pc','اعتُمد فحص الطلب '+r.no+' ميدانيًا. بانتظار إتمام التعاقد','request',r.id);toast('اعتُمد الفحص. الخطوة التالية: إتمام التعاقد');go('contract',{id:r.id})},
+ rejectInsp(d){const r=R(d.id);confirmM({title:'رفض الطلب بعد الفحص',body:'<p>سيُشعَر منسق المشروع ليختار محطة أخرى. هل تريد رفض الطلب '+r.no+'؟</p>',ok:'تأكيد الرفض',cls:'danger',fn(){const f=F('insp');r.inspection={res:Object.assign({},f.res),notes:(f.notes||'').trim(),at:S.today};setStatus(r,'rejected_inspection','المنسق الميداني',r.inspection.notes);notify('pc','رُفض الطلب '+r.no+' بعد الفحص الميداني','request',r.id);notify('sm:'+r.stationId,'رُفض الطلب '+r.no+' بعد الفحص الميداني','request',r.id);toast('تم رفض الطلب وإشعار منسق المشروع')}})},
+ finalize(d){const r=R(d.id);if(!F('ctr').ok){ui.err.ctr={ok:'يلزم تأكيد صحة الاتفاقية'};render();return}
+  r.contract={ref:'CT-2026-'+pad(20+S.seq.r),at:S.today};setStatus(r,'contract_finalized','المنسق الميداني','أُتمت الاتفاقية عبر المنصة');setStatus(r,'pending_scheduling','النظام');const p=P(r.projectId);if(p.status==='planning')p.status='active';
+  notify('pc','تم التعاقد على الطلب '+r.no,'request',r.id);notify('sm:'+r.stationId,'تم التعاقد على الطلب '+r.no+'. جهّز المياه والصهاريج عند نشر الجدول','request',r.id);toast('تم التعاقد. اختر المناطق وابدأ الجدولة');go('plan',{id:r.id,tab:'areas'})},
+ togArea(d){const r=R(ui.route.id);const i=r.plan.findIndex(x=>x.areaId===d.id);
+  if(i>=0){if(S.appts.some(a=>a.reqId===r.id&&a.areaId===d.id)){toast('لا يمكن إزالة منطقة لها مواعيد. احذف مواعيدها أولًا','bad');return}r.plan.splice(i,1);delete F('alloc')['q_'+d.id];delete F('alloc')['v_'+d.id]}
+  else{r.plan.push({areaId:d.id,qty:0,visits:1});F('alloc')['q_'+d.id]=0;F('alloc')['v_'+d.id]=1}render()},
+ saveAlloc(){const r=R(ui.route.id),f=F('alloc');const s=allocSum(r);
+  if(s>r.qty){toast('مجموع الكميات يتجاوز الكمية المعتمدة','bad');return}
+  for(const x of r.plan){const q=+f['q_'+x.areaId],v=+f['v_'+x.areaId];const sc=sum(S.appts.filter(a=>a.reqId===r.id&&a.areaId===x.areaId),a=>a.qty);
+   if(!(q>=0)||!(v>=1)){toast('أدخل كمية وعدد زيارات صحيحين','bad');return}
+   if(q<sc){toast('كمية «'+AR(x.areaId).name+'» أقل من المجدول فعليًا ('+fq(sc)+')','bad');return}}
+  r.plan.forEach(x=>{x.qty=+f['q_'+x.areaId];x.visits=Math.round(+f['v_'+x.areaId])});toast('حُفظ التخصيص. المتبقي '+fq(r.qty-s));render()},
+ addAppt(d){A._apModal(d.id,null)},editAppt(d){const a=AP(d.id);A._apModal(a.reqId,a)},
+ _apModal(rid,a){const r=R(rid);openForm('ap',a?{areaId:a.areaId,date:a.date,time:a.time,qty:a.qty,notes:a.sn||''}:{areaId:r.plan[0].areaId,date:S.today>r.periodStart?S.today:r.periodStart,time:'09:00',qty:''});
+  ui.modal={title:a?'تعديل موعد التوزيع':'موعد توزيع جديد',body:()=>'<div class="form"><div class="note">المتبقي من الكمية المعتمدة: <b>'+fq(remain(r)+(a?a.qty:0))+'</b></div>'+fld('ap','areaId','المنطقة',{type:'select',opts:r.plan.map(x=>[x.areaId,AR(x.areaId).name+' (مخصص '+x.qty+' م³)']),ro:!!a})+'<div class="grid2">'+fld('ap','date','التاريخ',{type:'date',req:1,min:r.periodStart,max:r.periodEnd})+fld('ap','time','وقت الوصول المتوقع',{type:'time',req:1})+'</div>'+fld('ap','qty','الكمية المخصصة (م³)',{type:'number',min:1,req:1})+fld('ap','notes','ملاحظات (اختيارية)',{type:'textarea',rows:2})+'</div>',
+  actions:[{label:a?'حفظ التعديل':'إضافة الموعد',cls:'primary',fn(){const f=F('ap'),q=+f.qty;const other=sum(S.appts.filter(x=>x.reqId===rid&&(!a||x.id!==a.id)),x=>x.qty);const areaS=sum(S.appts.filter(x=>x.reqId===rid&&x.areaId===f.areaId&&(!a||x.id!==a.id)),x=>x.qty);const plan=r.plan.find(x=>x.areaId===f.areaId);
+   if(!validate('ap',[['date',()=>f.date&&f.date>=r.periodStart&&f.date<=r.periodEnd,'التاريخ خارج فترة التوريد ('+fmtD(r.periodStart)+' – '+fmtD(r.periodEnd)+')'],['time',()=>f.time,'حدد الوقت'],['qty',()=>q>0&&other+q<=r.qty&&areaS+q<=plan.qty,q>0?(other+q>r.qty?'يتجاوز الكمية المعتمدة. المتاح '+fq(r.qty-other):'يتجاوز المخصص للمنطقة. المتاح '+fq(plan.qty-areaS)):'أدخل كمية أكبر من صفر']])){render();return false}
+   if(a){a.date=f.date;a.time=f.time;a.qty=q;a.sn=f.notes}else S.appts.push({id:'a'+(++S.seq.a),reqId:rid,areaId:f.areaId,date:f.date,time:f.time,qty:q,status:'scheduled',actual:'',notes:'',sn:f.notes,closed:false,media:[]});
+   toast(a?'عُدّل الموعد':'أُضيف الموعد. المتبقي '+fq(r.qty-other-q))}},{label:'إلغاء'}]};render()},
+ delAppt(d){const a=AP(d.id);confirmM({title:'حذف الموعد',body:'<p>سيُحذف موعد «'+esc(AR(a.areaId).name)+'» بتاريخ '+fmtD(a.date)+' وتعود كميته إلى المتبقي.</p>',ok:'حذف',cls:'danger',fn(){S.appts=S.appts.filter(x=>x.id!==a.id);toast('حُذف الموعد')}})},
+ autoAppts(d){const r=R(d.id);let n=0,k=0;const base=addDays(S.today>r.periodStart?S.today:r.periodStart,1);
+  r.plan.forEach((x,i)=>{const al=S.appts.filter(a=>a.reqId===r.id&&a.areaId===x.areaId);const miss=x.visits-al.length;let rem=x.qty-sum(al,a=>a.qty);if(miss<=0||rem<=0)return;
+   const per=Math.floor(rem/miss);for(let j=0;j<miss;j++){const q=j===miss-1?rem:per;rem-=q;if(q<=0)continue;let dt=addDays(base,k*2+(i%2));if(dt>r.periodEnd)dt=r.periodEnd;S.appts.push({id:'a'+(++S.seq.a),reqId:r.id,areaId:x.areaId,date:dt,time:'09:00',qty:q,status:'scheduled',actual:'',notes:'',sn:'',closed:false,media:[]});k++;n++}});
+  toast(n?'أُنشئ '+n+' موعدًا مقترحًا، يمكنك تعديلها':'لا توجد مناطق تحتاج إلى مواعيد إضافية');render()},
+ publish(d){const r=R(d.id);r.published=true;if(r.status==='pending_scheduling')setStatus(r,'scheduled','المنسق الميداني','نُشر الجدول الأسبوعي');
+  notify('sm:'+r.stationId,'نُشر جدول التوزيع للطلب '+r.no+': جهّز الصهاريج','request',r.id);notify('pc','نُشر جدول التوزيع للطلب '+r.no,'request',r.id);toast('نُشر الجدول للعامة');render()},
+ completeReq(d){const r=R(d.id);setStatus(r,'completed','المنسق الميداني','اكتملت جميع عمليات التوزيع');notify('pc','اكتمل الطلب '+r.no+' وجميع عملياته مغلقة','project',r.projectId);toast('اعتُمد اكتمال الطلب');render()},
+ nextStatus(d){const a=AP(d.id),r=R(a.reqId),nx=nextOf(a);if(!nx)return;a.status=nx[0];if(r.status==='scheduled')setStatus(r,'in_progress','المنسق الميداني');
+  if(nx[0]==='completed'){a.actualDate=S.today;a.actualTime=nowT();F('rec').date=a.actualDate;F('rec').time=a.actualTime;toast('اكتمل التوزيع. سجّل الكمية المسلّمة فعليًا')}else toast('الحالة: '+nx[1]);render()},
+ saveRec(d){const a=AP(d.id),f=F('rec');if(!validate('rec',[['actual',()=>f.actual!==''&&f.actual!=null&&+f.actual>=0,'أدخل الكمية المسلّمة فعليًا']])){render();return}
+  a.actual=+f.actual;a.actualDate=f.date;a.actualTime=f.time;a.notes=f.notes||'';toast('حُفظ سجل التوزيع');render()},
+ sampleMedia(d){const a=AP(d.id);a.media.push({id:'m'+Date.now(),type:d.t,name:d.t==='photo'?'صورة.jpg':'فيديو.mp4',caption:d.t==='photo'?'صورة توثيق تجريبية':'مقطع توثيق تجريبي',consent:!!F('md').consent});toast('أُضيف ملف تجريبي (محاكاة)');render()},
+ togConsent(d){const m=AP(d.id).media.find(x=>x.id===d.m);m.consent=!m.consent;render()},
+ delMedia(d){const a=AP(d.id);a.media=a.media.filter(x=>x.id!==d.m);render()},
+ closeAppt(d){const a=AP(d.id);confirmM({title:'إغلاق عملية التوزيع',body:'<p>ستُغلق عملية «'+esc(AR(a.areaId).name)+'» بتاريخ '+fmtD(a.date)+' ولن يمكن تعديلها. لا يُغلق ذلك المشروع نفسه.</p>',ok:'إغلاق العملية',cls:'ok',fn(){a.closed=true;toast('أُغلقت عملية التوزيع')}})},
+ evalArea(d){const a=AR(d.id);openForm('ev',Object.assign({},a.ev));const opts=[1,2,3,4,5].map(n=>[n,n+' من 5']);
+  ui.modal={title:'تقييم منطقة '+esc(a.name),body:()=>'<p class="muted tiny">تقييم عام لظروف التوزيع. يساعد في القرار ولا يستبعد المنطقة تلقائيًا.</p><div class="grid2">'+EV.map(e=>fld('ev',e[0],e[1],{type:'select',opts:opts})).join('')+'</div>'+fld('ev','note','ملاحظات',{type:'textarea',rows:2}),
+  actions:[{label:'حفظ التقييم',cls:'primary',fn(){const f=F('ev');EV.forEach(e=>a.ev[e[0]]=+f[e[0]]);a.ev.note=f.note||'';a.ev.at=S.today;toast('حُدّث التقييم')}},{label:'إلغاء'}]};render()},
+ /* shared */
+ readAll(){myNotes().forEach(n=>n.read=true);render()},
+ openNote(d){const n=S.notes.find(x=>x.id===d.id);n.read=true;const m={request:ui.role==='fc'?'inspect':'request',inspect:'inspect',project:'project',appt:'appt'}[n.ln];if(ui.role==='fc'&&n.ln==='request'){const r=R(n.lid);go(r.status==='pending_inspection'||isRej(r)?'inspect':isApproved(r)||r.status==='inspection_approved'?(r.status==='inspection_approved'?'contract':'plan'):'inspect',{id:n.lid});return}go(m,{id:n.lid})},
+ saveProf(){const u=S.users[ui.role],f=F('prof');u.name=f.name||u.name;u.email=f.email;u.phone=f.phone;toast('حُفظت بيانات الحساب');render()},
+ mact(d){const m=ui.modal,x=m.actions[+d.i];if(x.fn){if(x.fn()===false)return}ui.modal=null;render()},
+ switchRole(d,el){ui.role=el.value;ui.route={name:'dashboard'};ui.stack=[];ui.modal=null;ui.menu=false;enter(ui.route);render();window.scrollTo(0,0)}
+};
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+ if(e.target.classList&&e.target.classList.contains('modal-bg')){ui.modal=null;render();return}
+ const el=e.target.closest('[data-a]');if(!el||el.tagName==='SELECT'||el.disabled)return;
+ const h=A[el.dataset.a];if(h){e.preventDefault();h(el.dataset,el)}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&ui.modal){ui.modal=null;render()}});
+document.addEventListener('input',e=>{const t=e.target;
+ if(t.type==='file')return;
+ if(t.dataset.q){ui.q[t.dataset.q]=t.value;render();return}
+ if(t.dataset.f){const f=t.dataset.f;if(t.type==='checkbox')return;D(f)[t.name]=t.value;if(live[f])live[f]()}});
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.id==='media-file'){const a=AP(ui.route.id);Array.from(t.files).forEach(file=>{const isV=file.type.indexOf('video')===0;let url='';try{if(!isV)url=URL.createObjectURL(file)}catch(x){}a.media.push({id:'m'+Date.now()+Math.random().toString(36).slice(2,5),type:isV?'video':'photo',name:file.name,caption:file.name,url:url,consent:!!F('md').consent})});toast('أُضيف '+t.files.length+' ملف');render();return}
+ if(t.dataset.a==='switchRole'){A.switchRole(t.dataset,t);return}
+ if(t.dataset.f){const f=t.dataset.f;
+  if(t.type==='checkbox'){D(f)[t.name]=t.checked;render();return}
+  D(f)[t.name]=t.value;
+  if(f==='req'&&t.name==='project'){const p=P(t.value);Object.assign(D('req'),{qty:p.qty,quality:p.quality,periodStart:p.start,periodEnd:p.end,startDate:p.start})}
+  if(f==='rec'||f==='req'||(t.tagName==='SELECT'&&f!=='ap'&&f!=='ev'))render()}});
+render();
+})();
+</script>
+
+</body>
+</html>
